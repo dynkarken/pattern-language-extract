@@ -1,5 +1,29 @@
-.env
+# Raw scan files — too large for git (use scans/ locally only)
+scans/
+
+# Full-resolution extracted visuals — web-sized copies are in images/
+extracted_visuals/
+extracted_images/
+
+# Intermediate processing
+test_preprocessed_*.jpg
+test_output_076*.json
+preprocessing_test_results.json
+claude_vision_test.txt
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+
+# Claude Code session memory
+.claude/
+
+# macOS
 .DS_Store
