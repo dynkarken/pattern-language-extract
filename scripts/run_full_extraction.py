@@ -114,8 +114,14 @@ def detect_visual_regions(img_path, output_dir, page_label, padding=60,
             if degrees:
                 crop_pil = crop_pil.rotate(degrees, expand=True)
 
+            MAX_DIM = 1800
+            if max(crop_pil.width, crop_pil.height) > MAX_DIM:
+                ratio    = MAX_DIM / max(crop_pil.width, crop_pil.height)
+                new_size = (int(crop_pil.width * ratio), int(crop_pil.height * ratio))
+                crop_pil = crop_pil.resize(new_size, Image.LANCZOS)
+
             fname = f"{page_label}_{r['kind']}_{idx:02d}.jpg"
-            crop_pil.save(os.path.join(output_dir, fname), quality=92)
+            crop_pil.save(os.path.join(output_dir, fname), quality=85)
             saved.append({'filename': fname, 'kind': r['kind'], 'width': r['w'], 'height': r['h']})
             logger.info(f"  → {fname}  ({r['w']}x{r['h']}  mean={r['mean']:.0f}  std={r['std']:.0f})")
 

@@ -119,9 +119,17 @@ def detect_visual_regions(img_path: str, output_dir: str, page_label: str,
         if degrees:
             crop_pil = crop_pil.rotate(degrees, expand=True)
 
+        # Downsample to a reasonable output size — high-res scans produce
+        # crops that can exceed the original scan file size at quality=92.
+        MAX_DIM = 1800
+        if max(crop_pil.width, crop_pil.height) > MAX_DIM:
+            ratio    = MAX_DIM / max(crop_pil.width, crop_pil.height)
+            new_size = (int(crop_pil.width * ratio), int(crop_pil.height * ratio))
+            crop_pil = crop_pil.resize(new_size, Image.LANCZOS)
+
         fname = f"{page_label}_{r['kind']}_{idx:02d}.jpg"
         fpath = os.path.join(output_dir, fname)
-        crop_pil.save(fpath, quality=92)
+        crop_pil.save(fpath, quality=85)
 
         saved.append({
             "filename": fname,
