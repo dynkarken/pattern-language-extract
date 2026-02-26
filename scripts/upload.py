@@ -14,6 +14,11 @@ Required environment variables (in .env at project root):
   NOTION_RELATIONSHIPS_DB_ID — Pattern Relationships database ID
 
 Idempotent: checks if the pattern already exists (by Pattern # field) before creating.
+
+NOTE on access: This script uses the Notion REST API (NOTION_API_KEY). Each database must
+be explicitly shared with the integration in the Notion UI (... → Connect to → your integration).
+If you see 404 errors, share the database. Alternatively, use the MCP Notion tools directly
+in Claude Code — they use OAuth with broader workspace access and require no sharing setup.
 """
 
 import json

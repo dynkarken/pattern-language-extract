@@ -72,7 +72,7 @@ SCHEMA_EXAMPLE = """\
   "forces": [
     {
       "name": "family unity vs. individual privacy",
-      "type": "social",
+      "type": "social",  // one of: social, spatial, dimensional, light, movement, privacy, territorial, temporal
       "pole_a": "the need to share meals, gather, supervise children",
       "pole_b": "the need to retreat, work alone, rest",
       "description": "central tension Pattern 76 resolves",
@@ -149,7 +149,7 @@ Rules:
 - Extract 2–5 forces (minimum 2). Every force must have both pole_a and pole_b populated.
 - Every typed_rule must have source_text with a traceable quote from the text.
 - Invariant rules must NOT use hedging language ("typically", "about", "generally").
-- adjacency_rules: capture every explicitly numbered cross-reference in the text. relationship must be one of: required, enhanced_by, incompatible_with.
+- adjacency_rules: capture every explicitly numbered cross-reference in the text. relationship must be exactly one of: required, enhanced_by, incompatible_with. Use "required" for patterns Alexander names as prerequisites or structural dependencies; "enhanced_by" for patterns that complement or scale the pattern; "incompatible_with" for conflicts.
 - typed_rules: "value" must be numeric (float). If the rule is qualitative (no number), use "preferred_value" (string) instead and omit "value".
 - failure_modes: describe failure, do not re-state the rule. Must have source_text.
 - problem_statement and solution_statement must be verbatim text, not summaries.
