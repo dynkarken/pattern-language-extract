@@ -1,0 +1,208 @@
+{
+  "pattern_name": "Couple's Realm",
+  "pattern_number": 136,
+  "verbatim": {
+    "problem_statement": "The presence of children in a family often destroys the closeness and the special privacy which a man and wife need together.",
+    "solution_statement": "Make a special part of the house distinct from the common areas and all the children's rooms, where the man and woman of the house can be together in private. Give this place a quick path to the children's rooms, but, at all costs, make it a distinctly separate realm.",
+    "confidence_rating": "**"
+  },
+  "forces": [
+    {
+      "name": "couple privacy vs. parental accessibility",
+      "type": "privacy",
+      "pole_a": "the couple needs a protected, intimate world insulated from children's presence and awareness",
+      "pole_b": "parents need to remain close enough to respond quickly to children, especially infants, in emergencies",
+      "description": "Core tension: the couple must be both psychologically separate from and physically proximate to their children's realm",
+      "resolved_by": "a distinct couple's realm with a quick path to children's rooms but psychological and acoustic separation"
+    },
+    {
+      "name": "acoustic privacy vs. open household",
+      "type": "spatial",
+      "pole_a": "thin shared walls and open circulation allow children to hear and interrupt the couple's private life",
+      "pole_b": "a fully sealed, remote realm would isolate the couple from household life and emergency awareness",
+      "description": "Physical design of standard houses permits sound and movement to penetrate the couple's space, destroying intimacy",
+      "resolved_by": "double doors or ante-room buffer, and acoustically thicker separation between couple's realm and children's rooms"
+    },
+    {
+      "name": "couple identity vs. parental role",
+      "type": "social",
+      "pole_a": "the adult relationship between partners requires its own space, time, and shared private life",
+      "pole_b": "parenthood and child-rearing dominate household attention and physical space when no separate realm exists",
+      "description": "Without a dedicated realm, the couple's identity as partners is subsumed entirely by their role as parents",
+      "resolved_by": "a self-contained domain \u2014 sitting area, bed, dressing, bathing \u2014 that constitutes a complete world for the couple"
+    },
+    {
+      "name": "territorial completeness vs. spatial economy",
+      "type": "territorial",
+      "pole_a": "the couple's realm must be a complete domain with sitting, sleeping, dressing, and bathing to function as a true world",
+      "pole_b": "space in a family home is finite and pressure exists to reduce the couple's area to merely a bedroom",
+      "description": "A bedroom alone is insufficient; completeness of the realm matters even if each element is small",
+      "resolved_by": "embedding a sitting area, alcoved bed, dressing room, and ideally bathing room within the couple's realm even at small scale"
+    }
+  ],
+  "typed_rules": [
+    {
+      "metric": "Couple's realm separation from children's rooms",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "equals",
+      "preferred_value": "psychologically far and acoustically buffered from children's rooms",
+      "rationale": "The realm must be distinctly separate \u2014 'at all costs' \u2014 to protect the couple's private life from constant parental awareness",
+      "source_text": "at all costs, make it a distinctly separate realm"
+    },
+    {
+      "metric": "Path to children's rooms",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "equals",
+      "preferred_value": "quick/direct route must exist",
+      "rationale": "Parents must be able to reach children rapidly in emergencies, particularly with infants",
+      "source_text": "Give this place a quick path to the children's rooms"
+    },
+    {
+      "metric": "Privacy buffer at entrance",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "double door or ante-room at entry to couple's realm",
+      "rationale": "An acoustic and visual buffer at the threshold is needed to protect the realm's privacy from the rest of the house",
+      "source_text": "it needs some kind of a double door, an ante-room, to protect its privacy"
+    },
+    {
+      "metric": "Bed placement within realm",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "bed tucked into alcove with its own window, not open in main sitting area",
+      "rationale": "The bed should be part of the realm but set apart to allow the sitting area to function independently for conversation and projects",
+      "source_text": "the bed is part of it, but tucked away into an alcove with its own window"
+    },
+    {
+      "metric": "Outdoor connection",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "private entrance to outdoors or balcony",
+      "rationale": "Direct outdoor access reinforces the realm's independence and completeness as a private world",
+      "source_text": "perhaps with its own entrance to the outdoors, to a balcony"
+    },
+    {
+      "metric": "Wall acoustic quality",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "equals",
+      "preferred_value": "walls must provide sufficient acoustic privacy; standard thin walls are insufficient",
+      "rationale": "Thin walls allow children's proximity to permeate the couple's private life and destroy intimacy",
+      "source_text": "The walls of the master bedroom are usually too thin to afford much acoustical privacy"
+    }
+  ],
+  "adjacency_rules": [
+    {
+      "target_pattern_number": 75,
+      "target_pattern_name": "The Family",
+      "relationship": "enhanced_by",
+      "note": "Couple's realm completes and supports the family structure pattern"
+    },
+    {
+      "target_pattern_number": 76,
+      "target_pattern_name": "House for a Small Family",
+      "relationship": "enhanced_by",
+      "note": "Couple's realm helps complete the house for a small family"
+    },
+    {
+      "target_pattern_number": 77,
+      "target_pattern_name": "House for a Couple",
+      "relationship": "enhanced_by",
+      "note": "Couple's realm is a version of House for a Couple embedded in the larger family house"
+    },
+    {
+      "target_pattern_number": 127,
+      "target_pattern_name": "Intimacy Gradient",
+      "relationship": "required",
+      "note": "Couple's realm ties to a particular position on the intimacy gradient and can help generate it"
+    },
+    {
+      "target_pattern_number": 138,
+      "target_pattern_name": "Sleeping to the East",
+      "relationship": "enhanced_by",
+      "note": "Marriage bed within the realm should have morning light from the east"
+    },
+    {
+      "target_pattern_number": 144,
+      "target_pattern_name": "Bathing Room",
+      "relationship": "enhanced_by",
+      "note": "Bathing room ideally opens off the couple's realm to keep it self-contained"
+    },
+    {
+      "target_pattern_number": 159,
+      "target_pattern_name": "Light on Two Sides of Every Room",
+      "relationship": "enhanced_by",
+      "note": "Couple's realm should receive light on two sides"
+    },
+    {
+      "target_pattern_number": 185,
+      "target_pattern_name": "Sitting Circle",
+      "relationship": "required",
+      "note": "Even a tiny couple's realm must have a sitting area for relaxation, reading, music, and private conversation"
+    },
+    {
+      "target_pattern_number": 187,
+      "target_pattern_name": "Marriage Bed",
+      "relationship": "required",
+      "note": "Bed is placed at the heart of the couple's realm, tucked into an alcove"
+    },
+    {
+      "target_pattern_number": 189,
+      "target_pattern_name": "Dressing Room",
+      "relationship": "enhanced_by",
+      "note": "Dressing room placed beside the marriage bed within the couple's realm"
+    },
+    {
+      "target_pattern_number": 191,
+      "target_pattern_name": "The Shape of Indoor Space",
+      "relationship": "enhanced_by",
+      "note": "Governs the fine-detail shape and construction of the couple's realm spaces"
+    },
+    {
+      "target_pattern_number": 198,
+      "target_pattern_name": "Closets Between Rooms",
+      "relationship": "enhanced_by",
+      "note": "Two doors or closets used to keep the area private"
+    },
+    {
+      "target_pattern_number": 224,
+      "target_pattern_name": "Low Doorway",
+      "relationship": "enhanced_by",
+      "note": "Low doorway used as a privacy threshold into the couple's realm"
+    }
+  ],
+  "failure_modes": [
+    {
+      "description": "When children can circulate freely through the entire house, they dominate all spaces and no room remains private for the couple.",
+      "violated_rule": "Couple's realm separation from children's rooms",
+      "symptom": "The couple's private life is continually interrupted; their role as parents permeates all aspects of their intimate relations.",
+      "source_text": "Children are able to run everywhere in the house, and therefore tend to dominate all of it. No rooms are private."
+    },
+    {
+      "description": "When the bathroom is placed so adults must pass children's bedrooms to reach it, children's proximity infiltrates even nocturnal adult movements.",
+      "violated_rule": "Path to children's rooms",
+      "symptom": "Adults cannot move privately within the house at night; every bathroom trip is a reminder of the children's presence.",
+      "source_text": "The bathroom is often placed so that adults must walk past children's bedrooms to reach it."
+    },
+    {
+      "description": "When bedroom walls are acoustically thin, the couple is constantly aware of children nearby and cannot achieve intimacy.",
+      "violated_rule": "Wall acoustic quality",
+      "symptom": "Private life is permeated by parental awareness; the couple cannot speak, make love, or share sorrow without acoustic exposure to children.",
+      "source_text": "The walls of the master bedroom are usually too thin to afford much acoustical privacy."
+    },
+    {
+      "description": "When the couple's realm is reduced to only a bedroom without sitting area, dressing space, or bathing access, it fails to function as a complete private world.",
+      "violated_rule": "Bed placement within realm",
+      "symptom": "The realm cannot sustain private life beyond sleep; conversation, projects, and relaxation have no protected place, so the couple reverts to shared family spaces.",
+      "source_text": "It is a place not only insulated from the children's world, but also complete in itself, a world, a domain."
+    },
+    {
+      "description": "When no privacy buffer exists at the entrance to the couple's realm, children and household noise breach the threshold freely.",
+      "violated_rule": "Privacy buffer at entrance",
+      "symptom": "The realm offers no psychological transition from household to private life; intimacy is disrupted by sudden entry and ambient sound.",
+      "source_text": "it needs some kind of a double door, an ante-room, to protect its privacy"
+    }
+  ]
+}

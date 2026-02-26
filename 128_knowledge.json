@@ -1,0 +1,215 @@
+{
+  "pattern_name": "Indoor Sunlight",
+  "pattern_number": 128,
+  "verbatim": {
+    "problem_statement": "If the right rooms are facing south, a house is bright and sunny and cheerful; if the wrong rooms are facing south, the house is dark and gloomy.",
+    "solution_statement": "Place the most important rooms along the south edge of the building, and spread the building out along the east-west axis. Fine tune the arrangement so that the proper rooms are exposed to the south-east and the south-west sun. For example: give the common area a full southern exposure, bedrooms south-east, porch south-west. For most climates, this means the shape of the building is elongated east-west.",
+    "confidence_rating": "***"
+  },
+  "forces": [
+    {
+      "name": "solar access vs. programmatic arrangement",
+      "type": "spatial",
+      "pole_a": "the need to place the most-used rooms where direct sunlight can reach them throughout the day",
+      "pole_b": "the competing organisational logic of the intimacy gradient and functional adjacencies that may pull rooms away from the south edge",
+      "description": "The desire to optimise sunlight in key rooms conflicts with the tendency to arrange rooms according to function or privacy without regard to orientation.",
+      "resolved_by": "deliberately positioning the most important rooms along the south edge and elongating the building east-west so that morning, midday, and afternoon sun can be distributed across different room types"
+    },
+    {
+      "name": "thermal comfort in winter vs. overheating in summer",
+      "type": "light",
+      "pole_a": "the need to admit low winter sun for warmth and brightness",
+      "pole_b": "the need to exclude high summer sun to prevent overheating",
+      "description": "A building's orientation and shape must simultaneously capture winter solar gain and resist summer solar gain.",
+      "resolved_by": "elongating the building along the east-west axis, which Olgyay's data shows is optimal across all climates for balancing summer and winter thermal performance"
+    },
+    {
+      "name": "interior brightness vs. room depth",
+      "type": "light",
+      "pole_a": "the desire for sunlit, cheerful interiors with direct sun penetration",
+      "pole_b": "the structural and spatial tendency to build deep floor plates that leave interior rooms permanently in shadow",
+      "description": "Deeper buildings accommodate more programme but condemn many rooms to permanent darkness; shallow south-facing rooms maximise sunlight but constrain plan depth.",
+      "resolved_by": "distributing important rooms along the south edge in a relatively shallow plan, ensuring direct sun reaches occupied spaces throughout the day"
+    },
+    {
+      "name": "time-of-day use vs. fixed orientation",
+      "type": "temporal",
+      "pole_a": "different rooms are used at different times of day and benefit from sun at those specific times (breakfast nook in morning, porch in evening)",
+      "pole_b": "a building has a single fixed orientation that cannot shift to follow the sun",
+      "description": "The sun's east-to-west arc means a single south orientation cannot serve all rooms equally; rooms used at specific times need exposure to SE or SW as appropriate.",
+      "resolved_by": "fine-tuning room placement along the south-east to south-west arc so that bedrooms face south-east for morning sun, common areas face due south for midday, and porches face south-west for evening sun"
+    }
+  ],
+  "typed_rules": [
+    {
+      "metric": "Building axis orientation",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "eq",
+      "preferred_value": "long axis east-west",
+      "rationale": "Olgyay's data shows it is always best to orient the long axis east-west across all climates tested",
+      "source_text": "Note that it is always best to orient the long axis east-west."
+    },
+    {
+      "metric": "Primary room placement",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "eq",
+      "preferred_value": "most important rooms along south edge",
+      "rationale": "Direct sunlight has the greatest effect on room quality; placing important rooms elsewhere deprives them of this benefit",
+      "source_text": "Place the most important rooms along the south edge of the building"
+    },
+    {
+      "metric": "Common area solar exposure",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "full southern exposure",
+      "rationale": "Common/family areas are used throughout the day and benefit from maximum solar access",
+      "source_text": "give the common area a full southern exposure"
+    },
+    {
+      "metric": "Bedroom solar exposure",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "south-east",
+      "rationale": "Bedrooms are used in the morning; south-east exposure captures morning sun",
+      "source_text": "bedrooms south-east"
+    },
+    {
+      "metric": "Porch solar exposure",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "south-west",
+      "rationale": "Porches are used in the late afternoon and evening; south-west exposure captures evening sun",
+      "source_text": "porch south-west"
+    },
+    {
+      "metric": "Building length-to-width ratio \u2014 cool climate (Minneapolis)",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "operator": "eq",
+      "value": 1.1,
+      "unit": "ratio (long:short)",
+      "rationale": "Composite optimum east-west elongation for cool climates balancing summer and winter thermal performance",
+      "source_text": "cool (Minneapolis) \u2026 composite optimum \u2026 1.1"
+    },
+    {
+      "metric": "Building length-to-width ratio \u2014 temperate climate (New York)",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "operator": "eq",
+      "value": 1.6,
+      "unit": "ratio (long:short)",
+      "rationale": "Composite optimum east-west elongation for temperate climates",
+      "source_text": "temperate (New York) \u2026 composite optimum \u2026 1.6"
+    },
+    {
+      "metric": "Building length-to-width ratio \u2014 hot-arid climate (Phoenix)",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "operator": "eq",
+      "value": 1.3,
+      "unit": "ratio (long:short)",
+      "rationale": "Composite optimum east-west elongation for hot-arid climates",
+      "source_text": "hot-arid (Phoenix) \u2026 composite optimum \u2026 1.3"
+    },
+    {
+      "metric": "Building length-to-width ratio \u2014 hot-humid climate (Miami)",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "operator": "eq",
+      "value": 1.7,
+      "unit": "ratio (long:short)",
+      "rationale": "Composite optimum east-west elongation for hot-humid climates",
+      "source_text": "hot-humid (Miami) \u2026 composite optimum \u2026 1.7"
+    }
+  ],
+  "adjacency_rules": [
+    {
+      "target_pattern_number": 105,
+      "target_pattern_name": "South Facing Outdoors",
+      "relationship": "required",
+      "note": "Pattern 105 establishes the building's southern orientation as a prerequisite; Pattern 128 refines the internal room arrangement within that framework"
+    },
+    {
+      "target_pattern_number": 127,
+      "target_pattern_name": "Intimacy Gradient",
+      "relationship": "required",
+      "note": "The intimacy gradient determines the distribution of public and private rooms; indoor sunlight assigns solar exposure within that gradient"
+    },
+    {
+      "target_pattern_number": 138,
+      "target_pattern_name": "Sleeping to the East",
+      "relationship": "enhanced_by",
+      "note": "Reinforces south-east bedroom placement to capture morning sun"
+    },
+    {
+      "target_pattern_number": 161,
+      "target_pattern_name": "Sunny Place",
+      "relationship": "enhanced_by",
+      "note": "Sunny outdoor place is opened from the south-facing indoor rooms"
+    },
+    {
+      "target_pattern_number": 162,
+      "target_pattern_name": "North Face",
+      "relationship": "enhanced_by",
+      "note": "Storage and garages are placed to the north, freeing the south edge for habitable rooms"
+    },
+    {
+      "target_pattern_number": 163,
+      "target_pattern_name": "Outdoor Room",
+      "relationship": "enhanced_by",
+      "note": "Outdoor rooms are placed directly outside south-facing indoor rooms"
+    },
+    {
+      "target_pattern_number": 157,
+      "target_pattern_name": "Home Workshop",
+      "relationship": "enhanced_by",
+      "note": "Workshop benefits from full southern exposure during the middle of the day"
+    },
+    {
+      "target_pattern_number": 183,
+      "target_pattern_name": "Workspace Enclosure",
+      "relationship": "enhanced_by",
+      "note": "Work bench or desk oriented toward the sun in workspace enclosure"
+    },
+    {
+      "target_pattern_number": 199,
+      "target_pattern_name": "Sunny Counter",
+      "relationship": "enhanced_by",
+      "note": "Kitchen work counter is oriented toward the sun as a refinement of indoor sunlight"
+    },
+    {
+      "target_pattern_number": 236,
+      "target_pattern_name": "Windows Which Open Wide",
+      "relationship": "enhanced_by",
+      "note": "Wide-opening windows on south-facing rooms maximise connection between sunny interior and outdoor space"
+    }
+  ],
+  "failure_modes": [
+    {
+      "description": "When important rooms are placed on the north side of the building, they receive no direct sunlight and remain permanently dark and gloomy regardless of other design moves.",
+      "violated_rule": "Primary room placement",
+      "symptom": "interior feels dark, cold, and cheerless; occupants avoid the room or use artificial light during the day",
+      "source_text": "if the wrong rooms are facing south, the house is dark and gloomy"
+    },
+    {
+      "description": "When a designer allows functional or privacy considerations to override solar placement without compensating, key living spaces lose the benefit of direct sun for most of the day.",
+      "violated_rule": "Primary room placement",
+      "symptom": "rooms that should be cheerful and warm are dim; occupants feel the building is oppressive",
+      "source_text": "people may forget about it, and get confused by other considerations. The fact is that very few things have so much effect on the feeling inside a room as the sun shining into it."
+    },
+    {
+      "description": "When the building is oriented with its long axis north-south rather than east-west, fewer rooms can access the south edge and the building performs thermally worse in both summer and winter across all climate types.",
+      "violated_rule": "Building axis orientation",
+      "symptom": "excessive summer overheating and winter heat loss; most rooms face east or west rather than south",
+      "source_text": "Note that it is always best to orient the long axis east-west."
+    },
+    {
+      "description": "When all south-facing rooms receive identical due-south exposure regardless of their time-of-use, rooms used in the morning (bedrooms) receive weak low sun in the afternoon, and evening spaces miss the late sun entirely.",
+      "violated_rule": "Time-of-day use vs. fixed orientation",
+      "symptom": "bedrooms are stuffy and bright in the afternoon when unoccupied; porches are dark in the evening when used",
+      "source_text": "Fine tune the arrangement so that the proper rooms are exposed to the south-east and the south-west sun."
+    }
+  ]
+}

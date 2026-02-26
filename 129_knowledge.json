@@ -1,0 +1,185 @@
+{
+  "pattern_name": "Common Areas at the Heart",
+  "pattern_number": 129,
+  "verbatim": {
+    "problem_statement": "It is perhaps the most basic pattern there is in forming group cohesion.",
+    "solution_statement": "Create a single common area for every social group. Locate it at the center of gravity of all the spaces the group occupies, and in such a way that the paths which go in and out of the building lie tangent to it.",
+    "confidence_rating": "**"
+  },
+  "forces": [
+    {
+      "name": "communal gathering vs. private retreat",
+      "type": "social",
+      "pole_a": "the need for a shared place where the group can gather, eat, and feel cohesion",
+      "pole_b": "the need to reach private rooms without being forced into communal interaction",
+      "description": "People need a heart for group life, but access to private spaces must not be blocked or detoured by it",
+      "resolved_by": "placing the common area at the center of gravity with tangent rather than through-paths"
+    },
+    {
+      "name": "accessibility vs. centrality",
+      "type": "spatial",
+      "pole_a": "the common area must be equally reachable by all members of the group",
+      "pole_b": "the common area must not become a dead-end that requires a special detour to reach",
+      "description": "A room placed off the main circulation is avoided; one placed squarely in the flow becomes a mandatory pass-through that destroys privacy",
+      "resolved_by": "siting at the center of gravity with paths running tangent to its edges"
+    },
+    {
+      "name": "indoor comfort vs. desire to be outside",
+      "type": "spatial",
+      "pole_a": "the common area provides warmth, food, and seating for communal indoor life",
+      "pole_b": "on nice days people long to step outside, sit on grass, or carry on discussions outdoors",
+      "description": "A purely indoor common room fails to satisfy the pull toward outdoor life",
+      "resolved_by": "including an adjacent outdoor area as part of the common area"
+    },
+    {
+      "name": "spontaneous encounter vs. deliberate visit",
+      "type": "movement",
+      "pole_a": "group cohesion is built through casual, unplanned contact as people pass through",
+      "pole_b": "if reaching the common area requires purposeful effort, people skip it and isolation grows",
+      "description": "The common area must generate incidental contact, not only scheduled meetings",
+      "resolved_by": "routing daily in-and-out paths so they pass tangent to the common area"
+    }
+  ],
+  "typed_rules": [
+    {
+      "metric": "Location of common area relative to group territory",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "equals",
+      "preferred_value": "center of gravity of all spaces the group occupies",
+      "rationale": "Must be equally accessible to everyone and felt as the center of the group",
+      "source_text": "It must be at the center of gravity of the building complex, building, or building wing which the group occupies"
+    },
+    {
+      "metric": "Path relationship to common area",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "equals",
+      "preferred_value": "tangent \u2014 paths pass alongside but do not dead-end into it",
+      "rationale": "If the common area is a dead-end, people must go out of their way and will avoid it; tangent paths generate incidental contact",
+      "source_text": "it must be 'on the way' from the entrance to private rooms, so people always go by it on the way in and out of the building. It is crucial that it not be a dead-end room which one would have to go out of one's way to get to. For this reason, the paths which pass it must lie tangent to it."
+    },
+    {
+      "metric": "Number of common areas per social group",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "equals",
+      "value": 1.0,
+      "unit": "count",
+      "rationale": "A single shared heart creates group identity; multiple competing areas dilute cohesion",
+      "source_text": "Create a single common area for every social group."
+    },
+    {
+      "metric": "Required functional components \u2014 kitchen and eating space",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "kitchen with eating area included",
+      "rationale": "Eating is one of the most communal of activities and anchors the common area",
+      "source_text": "usually a kitchen and eating space, since eating is one of the most communal of activities"
+    },
+    {
+      "metric": "Required functional components \u2014 seating",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "at least some comfortable chairs",
+      "rationale": "Comfortable seating signals that lingering is welcome and encourages people to stay",
+      "source_text": "a sitting space\u2014at least some comfortable chairs, so people will feel like staying"
+    },
+    {
+      "metric": "Outdoor area adjacency",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "direct access to outdoor area included as part of the common area",
+      "rationale": "On nice days there is always the longing to be outside; an outdoor component satisfies this without leaving the communal zone",
+      "source_text": "It should also include an outdoor area\u2014on nice days there is always the longing to be outside\u2014to step out for a smoke, to sit down on the grass, to carry on a discussion."
+    }
+  ],
+  "adjacency_rules": [
+    {
+      "target_pattern_number": 139,
+      "target_pattern_name": "Farmhouse Kitchen",
+      "relationship": "required",
+      "note": "Food and fire are described as most basic to common areas; farmhouse kitchen is explicitly named first"
+    },
+    {
+      "target_pattern_number": 147,
+      "target_pattern_name": "Communal Eating",
+      "relationship": "required",
+      "note": "Eating is cited as one of the most communal activities; communal eating is a structural component of the common area"
+    },
+    {
+      "target_pattern_number": 181,
+      "target_pattern_name": "The Fire",
+      "relationship": "required",
+      "note": "Fire named as most basic element alongside food for common areas"
+    },
+    {
+      "target_pattern_number": 159,
+      "target_pattern_name": "Light on Two Sides of Every Room",
+      "relationship": "enhanced_by",
+      "note": "Governs fine-grained shape and quality of the common area space"
+    },
+    {
+      "target_pattern_number": 191,
+      "target_pattern_name": "The Shape of Indoor Space",
+      "relationship": "enhanced_by",
+      "note": "Governs the detailed spatial form of the common area"
+    },
+    {
+      "target_pattern_number": 142,
+      "target_pattern_name": "Sequence of Sitting Spaces",
+      "relationship": "enhanced_by",
+      "note": "Provides variety of seating characters within the common area for different kinds of moments"
+    },
+    {
+      "target_pattern_number": 163,
+      "target_pattern_name": "Outdoor Room",
+      "relationship": "required",
+      "note": "An outdoor area is listed as a required component of the common area"
+    },
+    {
+      "target_pattern_number": 119,
+      "target_pattern_name": "Arcades",
+      "relationship": "enhanced_by",
+      "note": "Helps make paths properly tangent to the common area"
+    },
+    {
+      "target_pattern_number": 131,
+      "target_pattern_name": "The Flow Through Rooms",
+      "relationship": "enhanced_by",
+      "note": "Supports the tangent path relationship essential to this pattern"
+    },
+    {
+      "target_pattern_number": 132,
+      "target_pattern_name": "Short Passages",
+      "relationship": "enhanced_by",
+      "note": "Supports the tangent path relationship essential to this pattern"
+    }
+  ],
+  "failure_modes": [
+    {
+      "description": "When the common area is placed as a dead-end room, people must make a deliberate detour to reach it and routinely bypass it, so group cohesion never forms.",
+      "violated_rule": "Path relationship to common area",
+      "symptom": "Common room sits empty; members never encounter one another casually; group identity fragments",
+      "source_text": "It is crucial that it not be a dead-end room which one would have to go out of one's way to get to."
+    },
+    {
+      "description": "When the common area is placed off-center \u2014 closer to some members' spaces than others \u2014 those farther away feel excluded and stop using it, undermining its role as a group heart.",
+      "violated_rule": "Location of common area relative to group territory",
+      "symptom": "Common area is colonised by the subgroup nearest to it; distant members form separate informal gathering spots",
+      "source_text": "it must be at the physical heart of the organization, so that it is equally accessible to everyone and can be felt as the center of the group"
+    },
+    {
+      "description": "When no kitchen or eating provision is included, the common area lacks the anchor of shared meals and loses the most reliably communal activity that draws people together repeatedly.",
+      "violated_rule": "Required functional components \u2014 kitchen and eating space",
+      "symptom": "Attendance is sporadic and event-driven rather than daily; the space feels institutional rather than homely",
+      "source_text": "eating is one of the most communal of activities"
+    },
+    {
+      "description": "When seating is absent or uncomfortable, people pass through without pausing, and the space functions as a corridor rather than a hearth.",
+      "violated_rule": "Required functional components \u2014 seating",
+      "symptom": "People stand briefly and move on; no lingering conversations develop; the area feels transitional, not communal",
+      "source_text": "at least some comfortable chairs, so people will feel like staying"
+    }
+  ]
+}

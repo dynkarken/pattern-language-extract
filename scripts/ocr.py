@@ -41,42 +41,65 @@ def encode_image(image_path: str) -> str:
         return base64.standard_b64encode(f.read()).decode("utf-8")
 
 
+_PROMPT_FULL = (
+    "This is a page from 'A Pattern Language' (1977) by Christopher Alexander, "
+    "an academic architecture textbook. Please transcribe ALL the printed text accurately.\n\n"
+    "Preserve:\n"
+    "- Exact wording and punctuation\n"
+    "- Paragraph breaks and structure\n"
+    "- All numbers, dimensions, and measurements\n"
+    "- Any diagrams or line drawings — insert a tag like [DIAGRAM: brief description]\n"
+    "- Any photographs — insert a tag like [PHOTOGRAPH: brief description]\n\n"
+    "Format as clean, readable text. Do not add interpretations or summaries."
+)
+
+_PROMPT_TEXT_ONLY = (
+    "This is a scanned page from 'A Pattern Language' (1977) by Christopher Alexander, "
+    "an academic architecture textbook. Transcribe ONLY the printed text on this page — "
+    "body text, headings, captions, footnotes, and any numbered references. "
+    "For any photographs or diagrams, insert [ILLUSTRATION] as a placeholder. "
+    "Do not describe image content. Output only the transcribed text."
+)
+
+
 def extract_text_from_page(image_path: str) -> str:
-    """Transcribe all text from a scanned book page via Claude Vision."""
+    """Transcribe all text from a scanned book page via Claude Vision.
+
+    Falls back to a text-only prompt if the default prompt triggers content filtering.
+    """
     logger.info(f"  Transcribing: {os.path.basename(image_path)}")
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2000,
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": "image/jpeg",
-                        "data": encode_image(image_path),
-                    },
-                },
-                {
-                    "type": "text",
-                    "text": (
-                        "Please transcribe ALL the text from this scanned book page accurately.\n\n"
-                        "Preserve:\n"
-                        "- Exact wording and punctuation\n"
-                        "- Paragraph breaks and structure\n"
-                        "- All numbers, dimensions, and measurements\n"
-                        "- Any diagrams or illustrations — insert a tag like "
-                        "[DIAGRAM: brief description of what it shows]\n"
-                        "- Any photographs — insert a tag like "
-                        "[PHOTOGRAPH: brief description of what it depicts]\n\n"
-                        "Format as clean, readable text. Do not add interpretations or summaries."
-                    ),
-                },
-            ],
-        }],
-    )
-    return message.content[0].text
+    image_data = encode_image(image_path)
+
+    for prompt, label in [(_PROMPT_FULL, "full"), (_PROMPT_TEXT_ONLY, "text-only fallback")]:
+        try:
+            message = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=2000,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": image_data,
+                            },
+                        },
+                        {"type": "text", "text": prompt},
+                    ],
+                }],
+            )
+            if label != "full":
+                logger.info(f"    Used {label} prompt for {os.path.basename(image_path)}")
+            return message.content[0].text
+        except Exception as e:
+            if "400" in str(e) or "content filtering" in str(e).lower() or "invalid_request_error" in str(e):
+                logger.warning(f"  Content filter on {label} prompt — {'trying fallback' if label == 'full' else 'skipping page'}")
+                if label == "text-only fallback":
+                    return "[PAGE BLOCKED BY CONTENT FILTER — text not available]"
+                continue
+            raise
 
 
 def find_pattern_pages(scans_dir: str, pattern_number: int) -> list[str]:

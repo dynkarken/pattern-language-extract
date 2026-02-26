@@ -1,0 +1,172 @@
+{
+  "pattern_name": "The Flow Through Rooms",
+  "pattern_number": 131,
+  "verbatim": {
+    "problem_statement": "[Page blocked by content filter \u2014 text not available]",
+    "solution_statement": "As far as possible, avoid the use of corridors and passages. Instead, use public rooms and common rooms as rooms for movement and for gathering. To do this, place the common rooms to form a chain, or loop, so that it becomes possible to walk from room to room\u2014and so that private rooms open directly off these public rooms. In every case, give this indoor circulation from room to room a feeling of great generosity, passing in a wide and ample loop around the house, with views of fires and great windows.",
+    "confidence_rating": "**"
+  },
+  "forces": [
+    {
+      "name": "movement efficiency vs. spatial vitality",
+      "type": "movement",
+      "pole_a": "the need to move efficiently through a building from room to room",
+      "pole_b": "the need for rooms to feel alive, inhabited, and connected rather than sterile",
+      "description": "Dedicated corridors solve circulation efficiently but drain life from a building; routing movement through shared rooms resolves this by making circulation itself a social act",
+      "resolved_by": "placing common rooms in a chain or loop so that movement passes through them rather than beside them"
+    },
+    {
+      "name": "privacy vs. connection",
+      "type": "privacy",
+      "pole_a": "the need for private rooms to be sheltered and undisturbed",
+      "pole_b": "the need for rooms to feel connected to the larger life of the building",
+      "description": "Private rooms must be reachable without exposing them to through-traffic, while still remaining integrated with communal life",
+      "resolved_by": "private rooms open directly off the public loop rooms, so they are accessible without being traversed"
+    },
+    {
+      "name": "generous circulation vs. compact plan",
+      "type": "spatial",
+      "pole_a": "the desire for wide, ample, looping paths that feel generous and inviting",
+      "pole_b": "the practical pressure to minimise wasted floor area in a building",
+      "description": "Generous circulation requires space; compact planning resists it \u2014 the pattern resolves this by making circulation space do double duty as habitable common room space",
+      "resolved_by": "common and public rooms serve simultaneously as gathering space and circulation path, eliminating wasted corridor area"
+    },
+    {
+      "name": "directionality vs. freedom of movement",
+      "type": "movement",
+      "pole_a": "a linear chain of rooms that creates clear sequential movement",
+      "pole_b": "the ability to approach destinations from multiple directions and move freely",
+      "description": "A simple chain of rooms forces one-way passage; a loop liberates occupants to come and go in two directions",
+      "resolved_by": "forming rooms in a loop so that circulation is always reversible and multi-directional"
+    }
+  ],
+  "typed_rules": [
+    {
+      "metric": "Use of corridors and passages",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "min",
+      "preferred_value": "avoid entirely wherever possible",
+      "rationale": "Corridors isolate movement from communal life and make buildings feel dead",
+      "source_text": "As far as possible, avoid the use of corridors and passages."
+    },
+    {
+      "metric": "Common room arrangement",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "preferred_value": "chain or loop configuration",
+      "rationale": "Only a chain or loop allows rooms to serve simultaneously as circulation and gathering space",
+      "source_text": "place the common rooms to form a chain, or loop, so that it becomes possible to walk from room to room"
+    },
+    {
+      "metric": "Private room access",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "preferred_value": "open directly off public/common loop rooms",
+      "rationale": "Private rooms must be reachable from common rooms without requiring passage through other private rooms",
+      "source_text": "private rooms open directly off these public rooms"
+    },
+    {
+      "metric": "Circulation character",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "wide, ample, generous loop with views of fires and great windows",
+      "rationale": "Generous circulation encourages use and social encounter rather than mere transit",
+      "source_text": "give this indoor circulation from room to room a feeling of great generosity, passing in a wide and ample loop around the house, with views of fires and great windows"
+    },
+    {
+      "metric": "Unavoidable passage treatment",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "wide, furnished like rooms, placed on one building side, filled with light",
+      "rationale": "When corridors cannot be avoided they should be made habitable rather than merely functional",
+      "source_text": "Whenever passages or corridors are unavoidable, make them wide and generous too; and try to place them on one side of the building, so that they can be filled with light\u2014Furnish them like rooms, with carpets, bookshelves, easy chairs and tables, filtered light"
+    },
+    {
+      "metric": "Loop configuration preference",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "full loop preferred over simple chain; chain with parallel passage acceptable",
+      "rationale": "A loop allows two-directional movement and ties rooms together most generously; a chain with parallel passage achieves similar effect where a full loop is impractical",
+      "source_text": "Even better, is the case where there is a loop. A loop, which passes through all the major rooms, public and common, establishes an enormous feeling of generosity."
+    },
+    {
+      "metric": "Door placement within rooms",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "in corners of rooms",
+      "rationale": "Corner doors preserve the usable area of room walls and minimise disruption to room activities by keeping through-movement to the periphery",
+      "source_text": "Keep doors which open into rooms, or doors between rooms which create the flow through rooms, in the corners of the rooms\u2014CORNER DOORS (196)"
+    }
+  ],
+  "adjacency_rules": [
+    {
+      "target_pattern_number": 132,
+      "target_pattern_name": "Short Passages",
+      "relationship": "enhanced_by",
+      "note": "When corridors are unavoidable, Short Passages specifies how to make them wide, light-filled, and positioned on one building side"
+    },
+    {
+      "target_pattern_number": 130,
+      "target_pattern_name": "Entrance Room",
+      "relationship": "enhanced_by",
+      "note": "Entrance Room should be furnished and treated like a room for movement, integrated with the flow-through system"
+    },
+    {
+      "target_pattern_number": 133,
+      "target_pattern_name": "Staircase as a Stage",
+      "relationship": "enhanced_by",
+      "note": "Staircase should be treated as a room for movement in the same spirit as the flow-through pattern"
+    },
+    {
+      "target_pattern_number": 134,
+      "target_pattern_name": "Zen View",
+      "relationship": "enhanced_by",
+      "note": "Rooms for movement should have views to animate and reward passage through them"
+    },
+    {
+      "target_pattern_number": 135,
+      "target_pattern_name": "Tapestry of Light and Dark",
+      "relationship": "enhanced_by",
+      "note": "Flow-through rooms should be filled with plenty of light to make circulation inviting"
+    },
+    {
+      "target_pattern_number": 159,
+      "target_pattern_name": "Light on Two Sides of Every Room",
+      "relationship": "enhanced_by",
+      "note": "Rooms used for movement and gathering should have light from two sides"
+    },
+    {
+      "target_pattern_number": 196,
+      "target_pattern_name": "Corner Doors",
+      "relationship": "required",
+      "note": "Doors between rooms that create the flow-through must be placed in corners to preserve room integrity"
+    }
+  ],
+  "failure_modes": [
+    {
+      "description": "When corridors are used instead of common rooms for circulation, the building feels dead and the corridor space is wasted \u2014 movement becomes purely functional transit with no social dimension.",
+      "violated_rule": "Use of corridors and passages",
+      "symptom": "Corridors go unused except for transit; common rooms lose vitality because people pass beside them rather than through them",
+      "source_text": "As far as possible, avoid the use of corridors and passages."
+    },
+    {
+      "description": "When common rooms are arranged in a dead-end chain without a loop or parallel passage, occupants must retrace their path to exit, and the rooms feel isolated and poorly connected.",
+      "violated_rule": "Common room arrangement",
+      "symptom": "Movement becomes one-directional; rooms at the end of the chain feel remote and cut off; the building loses a sense of generosity",
+      "source_text": "A loop, which passes through all the major rooms, public and common, establishes an enormous feeling of generosity. With a loop it is always possible to come and go in two different directions."
+    },
+    {
+      "description": "When private rooms can only be reached by passing through other private rooms, privacy is destroyed and movement constantly disturbs occupants.",
+      "violated_rule": "Private room access",
+      "symptom": "Bedrooms or work rooms are interrupted by through-traffic; occupants cannot be reached without disturbing others",
+      "source_text": "private rooms open directly off these public rooms"
+    },
+    {
+      "description": "When unavoidable passages are left narrow, dark, and unfurnished, they become oppressive and undermine the feeling of generosity that the pattern requires throughout the building.",
+      "violated_rule": "Unavoidable passage treatment",
+      "symptom": "Corridors feel institutional and uninviting; occupants hurry through rather than lingering; the building feels mean rather than generous",
+      "source_text": "Whenever passages or corridors are unavoidable, make them wide and generous too; and try to place them on one side of the building, so that they can be filled with light\u2014Furnish them like rooms, with carpets, bookshelves, easy chairs and tables, filtered light"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "pattern_name": "Bed Cluster",
+  "pattern_number": 143,
+  "verbatim": {
+    "problem_statement": "Every child in the family needs a private place, generally centered around the bed. But in many cultures, perhaps all cultures, young children feel isolated if they sleep alone, if their sleeping area is too private.",
+    "solution_statement": "[Solution statement not available \u2014 page blocked by content filter]",
+    "confidence_rating": "*"
+  },
+  "forces": [
+    {
+      "name": "privacy vs. companionship",
+      "type": "social",
+      "pole_a": "each child needs a private, individual place centered around their own bed",
+      "pole_b": "young children feel isolated and anxious if their sleeping area is too private or separate",
+      "description": "central tension between a child's need for personal territory and their need for proximity to siblings during sleep",
+      "resolved_by": "cluster of small private alcoves grouped around a shared common playspace"
+    },
+    {
+      "name": "shared space vs. individual territory",
+      "type": "territorial",
+      "pole_a": "shared bedroom allows companionship and easy supervision but creates conflict over possessions, light, and activity",
+      "pole_b": "fully isolated private rooms eliminate conflict but produce loneliness and psychological isolation",
+      "description": "tension between the one-room shared bedroom and fully separate private rooms as competing extremes",
+      "resolved_by": "intermediate cluster of alcoves \u2014 small enough to be personal, grouped around a common area"
+    },
+    {
+      "name": "individual ownership vs. communal play",
+      "type": "social",
+      "pole_a": "children are jealous of their toys and possessions and need a defensible personal space",
+      "pole_b": "children also need shared space for play and social interaction with siblings",
+      "description": "the need for a private retreat from siblings conflicts with the need for accessible shared play areas",
+      "resolved_by": "individual sleeping alcoves opening onto a central shared playspace"
+    },
+    {
+      "name": "enclosure vs. openness",
+      "type": "spatial",
+      "pole_a": "the sleeping alcove must feel enclosed and sheltered to provide security and identity for the child",
+      "pole_b": "the sleeping area must not be so enclosed that the child feels cut off from the family group",
+      "description": "spatial tension between the cocoon-like quality of a proper sleeping nook and sufficient openness to remain connected",
+      "resolved_by": "alcove form \u2014 partially enclosed but opening toward the common playspace"
+    }
+  ],
+  "typed_rules": [
+    {
+      "metric": "Sleeping configuration type",
+      "rule_type": "soft_preference",
+      "mutability": "invariant",
+      "preferred_value": "cluster of individual alcoves around a common playspace \u2014 not one shared room, not isolated private rooms",
+      "rationale": "Both extremes (shared room and fully private rooms) are described as bad; the cluster of alcoves resolves competing forces",
+      "source_text": "We shall try to show that both extremes are bad; and that some version of the cluster of alcoves is needed to solve the conflict between forces in a young child's life."
+    },
+    {
+      "metric": "Degree of sleeping privacy",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "small and private enough to feel personal, but not enclosed as a full room",
+      "rationale": "Full room isolation produces feelings of loneliness in young children; the alcove is the appropriate intermediate scale",
+      "source_text": "young children feel isolated if they sleep alone, if their sleeping area is too private"
+    },
+    {
+      "metric": "Relationship of alcoves to common area",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "preferred_value": "individual alcoves must be clustered around and open onto a shared central playspace",
+      "rationale": "The spatial connection between private alcove and shared space is the defining move that resolves the privacy/companionship tension",
+      "source_text": "a kind of configuration in which children have their own, small, private spaces, not as large as rooms, clustered around a common playspace"
+    },
+    {
+      "metric": "Light provision",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "light on two sides of the cluster space",
+      "rationale": "Cross-lighting prevents the cluster feeling dark or oppressive; referenced explicitly in concluding instructions",
+      "source_text": "Give the entire space LIGHT ON TWO SIDES (159)."
+    },
+    {
+      "metric": "Adult variant applicability",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "communal sleeping pattern (186) as alternative for adults",
+      "rationale": "The bed cluster pattern is primarily for children; a distinct pattern applies when occupants are adults",
+      "source_text": "Another version of this pattern, more suitable for adults, is given by COMMUNAL SLEEPING (186)."
+    }
+  ],
+  "adjacency_rules": [
+    {
+      "target_pattern_number": 136,
+      "target_pattern_name": "Couple's Realm",
+      "relationship": "required",
+      "note": "Sleeping areas for adults have been defined within the Couple's Realm; this pattern operates within that context"
+    },
+    {
+      "target_pattern_number": 137,
+      "target_pattern_name": "Children's Realm",
+      "relationship": "required",
+      "note": "Sleeping areas for children are defined within Children's Realm; the bed cluster's common playspace should be shaped per that pattern"
+    },
+    {
+      "target_pattern_number": 138,
+      "target_pattern_name": "Sleeping to the East",
+      "relationship": "required",
+      "note": "Bed cluster must be placed facing east to receive morning light, as established by this parent pattern"
+    },
+    {
+      "target_pattern_number": 186,
+      "target_pattern_name": "Communal Sleeping",
+      "relationship": "enhanced_by",
+      "note": "Adult version of the same clustering principle; referenced as the appropriate alternative when occupants are adults rather than children"
+    },
+    {
+      "target_pattern_number": 188,
+      "target_pattern_name": "Bed Alcove",
+      "relationship": "required",
+      "note": "Individual alcoves within the cluster must be built according to Bed Alcove specifications"
+    },
+    {
+      "target_pattern_number": 159,
+      "target_pattern_name": "Light on Two Sides of Every Room",
+      "relationship": "required",
+      "note": "The entire bed cluster space should receive light on two sides"
+    },
+    {
+      "target_pattern_number": 189,
+      "target_pattern_name": "Dressing Room",
+      "relationship": "enhanced_by",
+      "note": "Location of dressing areas used to help shape the bed cluster and individual alcoves"
+    },
+    {
+      "target_pattern_number": 198,
+      "target_pattern_name": "Closets Between Rooms",
+      "relationship": "enhanced_by",
+      "note": "Closet placement helps shape the bed cluster and individual alcoves"
+    },
+    {
+      "target_pattern_number": 203,
+      "target_pattern_name": "Child Caves",
+      "relationship": "enhanced_by",
+      "note": "Tiny nooks and crannies should be included within or near the bed cluster"
+    },
+    {
+      "target_pattern_number": 191,
+      "target_pattern_name": "The Shape of Indoor Space",
+      "relationship": "required",
+      "note": "Detailed shape and construction of the bed cluster space to follow this pattern"
+    }
+  ],
+  "failure_modes": [
+    {
+      "description": "When all children share one undivided bedroom, they fight constantly over possessions, light, radio, and activities, with no defensible personal territory for any child.",
+      "violated_rule": "Sleeping configuration type",
+      "symptom": "Chronic sibling conflict, inability for any child to have quiet or personal space, mutual interference with sleep and play",
+      "source_text": "Children are jealous of one another's toys; they fight over the light, the radio, the game being played, the door open or closed."
+    },
+    {
+      "description": "When each child has a fully separate private room, young children feel isolated, psychologically cut off, and lonely during sleeping hours.",
+      "violated_rule": "Degree of sleeping privacy",
+      "symptom": "Children feel abandoned or anxious at night; sleeping area is experienced as isolating rather than sheltering",
+      "source_text": "young children feel isolated if they sleep alone, if their sleeping area is too private"
+    },
+    {
+      "description": "When the sleeping alcoves are not connected to a shared playspace, children lose both the private retreat and the communal connection that the cluster pattern is designed to provide simultaneously.",
+      "violated_rule": "Relationship of alcoves to common area",
+      "symptom": "The arrangement reverts to either shared-room or isolated-room failure modes; neither privacy nor companionship is well served",
+      "source_text": "a kind of configuration in which children have their own, small, private spaces, not as large as rooms, clustered around a common playspace"
+    }
+  ]
+}
