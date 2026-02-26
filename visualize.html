@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Language — Knowledge Graph</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: #0f0f14;
+    color: #e8e2d9;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Graph canvas ── */
+  #graph-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  svg { width: 100%; height: 100%; }
+
+  .link {
+    stroke-opacity: 0.6;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .link.required      { stroke: #e55; }
+  .link.enhanced_by   { stroke: #4c9; }
+  .link.incompatible  { stroke: #fa0; }
+
+  .link-arrow { fill-opacity: 0.7; }
+
+  .node-loaded circle {
+    stroke-width: 2.5;
+    cursor: pointer;
+    transition: r 0.15s, filter 0.15s;
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.15));
+  }
+  .node-loaded.active circle {
+    filter: drop-shadow(0 0 14px rgba(255,255,255,0.55));
+    stroke-width: 3.5;
+  }
+  .node-loaded circle:hover {
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.45));
+  }
+
+  .node-external circle {
+    cursor: pointer;
+    opacity: 0.5;
+  }
+  .node-external circle:hover { opacity: 0.85; }
+
+  .label-loaded {
+    font-size: 11px;
+    font-weight: bold;
+    fill: #fff;
+    pointer-events: none;
+    text-anchor: middle;
+  }
+  .label-loaded .num { font-size: 13px; fill: #ffe; }
+
+  .label-external {
+    font-size: 9px;
+    fill: #aaa;
+    pointer-events: none;
+    text-anchor: middle;
+  }
+
+  /* ── Controls overlay ── */
+  #controls {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .ctrl-group {
+    background: rgba(20,20,30,0.85);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px 14px;
+    backdrop-filter: blur(8px);
+  }
+
+  .ctrl-group h4 {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 8px;
+  }
+
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ctrl-row:last-child { margin-bottom: 0; }
+
+  .swatch {
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn {
+    background: #1a1a2e;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    transition: background 0.15s;
+  }
+  .toggle-btn:hover { background: #2a2a3e; }
+  .toggle-btn.active { background: #2c3e60; border-color: #5080c0; color: #8af; }
+
+  /* ── Side panel ── */
+  #panel {
+    width: 360px;
+    min-width: 320px;
+    background: #12121c;
+    border-left: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.25s;
+  }
+
+  #panel.hidden { width: 0; min-width: 0; border: none; }
+
+  #panel-header {
+    padding: 20px 20px 14px;
+    border-bottom: 1px solid #222;
+    flex-shrink: 0;
+  }
+
+  #panel-num {
+    font-size: 11px;
+    color: #666;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #panel-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #eee;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  #panel-confidence {
+    font-size: 12px;
+    color: #888;
+  }
+
+  #panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 0 24px;
+  }
+
+  #panel-body::-webkit-scrollbar { width: 4px; }
+  #panel-body::-webkit-scrollbar-track { background: #0f0f14; }
+  #panel-body::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .section {
+    padding: 16px 20px 0;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #555;
+    border-bottom: 1px solid #1e1e2e;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+
+  .verbatim-block {
+    font-style: italic;
+    font-size: 12px;
+    color: #bbb;
+    line-height: 1.6;
+    background: #0a0a12;
+    border-left: 3px solid #444;
+    padding: 10px 12px;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 8px;
+  }
+
+  .verbatim-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #555;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    font-style: normal;
+  }
+
+  /* Force cards */
+  .force-card {
+    background: #0e0e1a;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .force-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .force-type-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+
+  .force-name {
+    font-size: 12px;
+    font-weight: bold;
+    color: #ddd;
+    line-height: 1.3;
+  }
+
+  .poles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .pole {
+    font-size: 10px;
+    color: #999;
+    background: #080810;
+    border-radius: 4px;
+    padding: 5px 8px;
+    line-height: 1.4;
+  }
+  .pole-a::before { content: "A "; color: #6af; font-weight: bold; }
+  .pole-b::before { content: "B "; color: #fa6; font-weight: bold; }
+
+  /* Rule rows */
+  .rule-row {
+    background: #0e0e1a;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 9px 12px;
+    margin-bottom: 6px;
+  }
+
+  .rule-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .rule-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .rule-badge.hard { background: #3a0a0a; color: #f88; border: 1px solid #600; }
+  .rule-badge.soft { background: #0a1a2a; color: #88f; border: 1px solid #036; }
+  .rule-badge.inv  { background: #1a0a2a; color: #d8f; border: 1px solid #406; font-size: 8px; }
+  .rule-badge.adp  { background: #0a1a0a; color: #8f8; border: 1px solid #040; font-size: 8px; }
+
+  .rule-metric { font-size: 12px; font-weight: bold; color: #ccc; }
+  .rule-value  { font-size: 11px; color: #adf; margin-top: 2px; }
+  .rule-source { font-size: 10px; color: #555; font-style: italic; margin-top: 4px; line-height: 1.4; }
+
+  /* Failure mode rows */
+  .failure-row {
+    background: #150a0a;
+    border: 1px solid #2a1010;
+    border-radius: 6px;
+    padding: 9px 12px;
+    margin-bottom: 6px;
+  }
+
+  .failure-desc  { font-size: 11px; color: #c88; line-height: 1.5; margin-bottom: 5px; }
+  .failure-sym   { font-size: 10px; color: #888; font-style: italic; line-height: 1.4; }
+  .failure-sym::before { content: "▸ "; color: #a44; }
+
+  /* Legend */
+  #legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: rgba(20,20,30,0.85);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 11px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+
+  #legend h4 {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: #aaa;
+  }
+
+  .legend-line {
+    width: 24px; height: 2px;
+    flex-shrink: 0;
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    font-size: 11px;
+    color: #444;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="graph-area">
+  <svg id="svg"></svg>
+
+  <div id="controls">
+    <div class="ctrl-group">
+      <h4>Show edges</h4>
+      <label class="ctrl-row">
+        <span class="swatch" style="background:#e55"></span>
+        <input type="checkbox" checked data-edge="required"> required
+      </label>
+      <label class="ctrl-row">
+        <span class="swatch" style="background:#4c9"></span>
+        <input type="checkbox" checked data-edge="enhanced_by"> enhanced_by
+      </label>
+    </div>
+    <div class="ctrl-group">
+      <h4>Nodes</h4>
+      <button class="toggle-btn active" id="btn-external">Show external patterns</button>
+    </div>
+  </div>
+
+  <div id="legend">
+    <h4>Relationships</h4>
+    <div class="legend-row"><div class="legend-line" style="background:#e55"></div> required</div>
+    <div class="legend-row"><div class="legend-line" style="background:#4c9"></div> enhanced_by</div>
+    <div class="legend-row"><div class="legend-line" style="background:#fa0; height:1px; border-top:1px dashed #fa0"></div> incompatible_with</div>
+  </div>
+
+  <div id="hint">scroll to zoom · drag to pan · click node for detail</div>
+</div>
+
+<div id="panel" class="hidden">
+  <div id="panel-header">
+    <div id="panel-num">Pattern</div>
+    <div id="panel-name"></div>
+    <div id="panel-confidence"></div>
+  </div>
+  <div id="panel-body"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+
+const LOADED = {
+  76: {
+    name: "House for a Small Family",
+    confidence: "**",
+    problem: "The problem we are trying to solve is that a small family needs several different kinds of spaces, each suited to a different way of being together, yet they must all be connected to form one coherent house.",
+    solution: "Arrange the house in the form of a small cluster of pavilions arranged around a courtyard. Each pavilion should be devoted to a single activity and should overlook the courtyard.",
+    forces: [
+      { name: "family unity vs. individual privacy", type: "social", pole_a: "the need to share meals, gather, and supervise children in common space", pole_b: "the need for adults and children to retreat, work alone, rest, or seek refuge" },
+      { name: "functional separation vs. spatial coherence", type: "spatial", pole_a: "each activity benefits from its own distinct, acoustically and visually separated zone", pole_b: "the house must read as one coherent dwelling, not a collection of disconnected buildings" },
+      { name: "child supervision vs. child outdoor freedom", type: "social", pole_a: "young children need secure outdoor play space away from adult interior activity", pole_b: "adults need to be able to supervise children without constant physical presence" },
+      { name: "generous feeling vs. modest footprint", type: "dimensional", pole_a: "a small family needs spaces that feel generous, well-lit, and comfortable", pole_b: "the house must fit within a modest budget and total floor area of 800–1200 sq ft" },
+      { name: "morning routine flow vs. evening leisure flow", type: "temporal", pole_a: "morning use requires rapid sequential access to bathroom, kitchen, and exit routes", pole_b: "evening use requires slow, overlapping, relaxed occupation of common and private areas" },
+    ],
+    rules: [
+      { metric: "Total house area", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "74.3–111.5 m²", source_text: "Total area: 800-1200 square feet" },
+      { metric: "Courtyard short side minimum", rule_type: "hard_constraint", mutability: "invariant", value: 4.57, unit: "m", operator: "min", source_text: "minimum 15-20 feet on short side" },
+      { metric: "Courtyard enclosure", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "bounded on 3–4 sides by building edges", source_text: "The courtyard is not merely aesthetic but functional" },
+      { metric: "Kitchen visual connection to play areas", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "direct sightlines from kitchen to courtyard", source_text: "Parents cook while supervising children" },
+      { metric: "Courtyard solar orientation", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "south-facing in northern hemisphere", source_text: "all the rooms which face the courtyard get maximum sun" },
+    ],
+    failures: [
+      { description: "When the courtyard is too small on its short side it cannot accommodate outdoor play or function as a social gathering space; it becomes a gap between buildings rather than a room.", symptom: "Children have no usable outdoor play area; family activity collapses into single interior room" },
+      { description: "When pavilions are arranged without enclosing the courtyard on at least three sides, the outdoor space loses enclosure and becomes an open lawn.", symptom: "Outdoor space goes unused; children cannot be passively supervised from kitchen" },
+      { description: "When the kitchen has no sightline to play areas, parents must physically leave the kitchen to check on children, interrupting cooking.", symptom: "Children confined indoors; kitchen loses its role as social hub" },
+    ],
+    color: "#3a8fd6"
+  },
+  128: {
+    name: "Indoor Sunlight",
+    confidence: "***",
+    problem: "If the right rooms are facing south, a house is bright and sunny and cheerful; if the wrong rooms are facing south, the house is dark and gloomy.",
+    solution: "Place the most important rooms along the south edge of the building, and spread the building out along the east-west axis. Fine tune the arrangement so that the proper rooms are exposed to the south-east and the south-west sun.",
+    forces: [
+      { name: "solar access vs. programmatic arrangement", type: "spatial", pole_a: "the need to place the most-used rooms where direct sunlight can reach them", pole_b: "the competing organisational logic of the intimacy gradient and functional adjacencies" },
+      { name: "thermal comfort in winter vs. overheating in summer", type: "light", pole_a: "the need to admit low winter sun for warmth and brightness", pole_b: "the need to exclude high summer sun to prevent overheating" },
+      { name: "interior brightness vs. room depth", type: "light", pole_a: "the desire for sunlit, cheerful interiors with direct sun penetration", pole_b: "the structural tendency to build deep floor plates that leave interior rooms in shadow" },
+      { name: "time-of-day use vs. fixed orientation", type: "temporal", pole_a: "different rooms are used at different times of day and benefit from sun at those times", pole_b: "a building has a single fixed orientation that cannot shift to follow the sun" },
+    ],
+    rules: [
+      { metric: "Building axis orientation", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "long axis east-west", source_text: "Note that it is always best to orient the long axis east-west." },
+      { metric: "Primary room placement", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "most important rooms along south edge", source_text: "Place the most important rooms along the south edge of the building" },
+      { metric: "Common area solar exposure", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "full southern exposure", source_text: "give the common area a full southern exposure" },
+      { metric: "Bedroom solar exposure", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "south-east", source_text: "bedrooms south-east" },
+      { metric: "Building L:W ratio (temperate)", rule_type: "soft_preference", mutability: "site-adaptive", value: 1.6, unit: "ratio", operator: "ratio", source_text: "temperate (New York) … composite optimum … 1.6" },
+    ],
+    failures: [
+      { description: "When important rooms are placed on the north side, they receive no direct sunlight and remain permanently dark and gloomy.", symptom: "interior feels dark, cold, and cheerless; occupants use artificial light during the day" },
+      { description: "When the building is oriented north-south rather than east-west, fewer rooms can access the south edge and the building performs thermally worse.", symptom: "excessive summer overheating and winter heat loss" },
+    ],
+    color: "#d4a017"
+  },
+  129: {
+    name: "Common Areas at the Heart",
+    confidence: "**",
+    problem: "It is perhaps the most basic pattern there is in forming group cohesion.",
+    solution: "Create a single common area for every social group. Locate it at the center of gravity of all the spaces the group occupies, and in such a way that the paths which go in and out of the building lie tangent to it.",
+    forces: [
+      { name: "communal gathering vs. private retreat", type: "social", pole_a: "the need for a shared place where the group can gather, eat, and feel cohesion", pole_b: "the need to reach private rooms without being forced into communal interaction" },
+      { name: "accessibility vs. centrality", type: "spatial", pole_a: "the common area must be equally reachable by all members of the group", pole_b: "the common area must not become a dead-end that requires a special detour to reach" },
+      { name: "indoor comfort vs. desire to be outside", type: "spatial", pole_a: "the common area provides warmth, food, and seating for communal indoor life", pole_b: "on nice days people long to step outside, sit on grass, or carry on discussions outdoors" },
+      { name: "spontaneous encounter vs. deliberate visit", type: "movement", pole_a: "group cohesion is built through casual, unplanned contact as people pass through", pole_b: "if reaching the common area requires purposeful effort, people skip it and isolation grows" },
+    ],
+    rules: [
+      { metric: "Location of common area", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "center of gravity of all spaces the group occupies", source_text: "at the center of gravity of the building complex" },
+      { metric: "Path relationship", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "tangent — paths pass alongside but do not dead-end into it", source_text: "the paths which pass it must lie tangent to it" },
+      { metric: "Number of common areas per group", rule_type: "hard_constraint", mutability: "invariant", value: 1, unit: "count", operator: "equals", source_text: "Create a single common area for every social group." },
+      { metric: "Required components — seating", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "at least some comfortable chairs", source_text: "so people will feel like staying" },
+    ],
+    failures: [
+      { description: "When the common area is placed as a dead-end room, people must make a deliberate detour to reach it and routinely bypass it, so group cohesion never forms.", symptom: "Common room sits empty; members never encounter one another casually" },
+      { description: "When the common area is placed off-center, those farther away feel excluded and stop using it.", symptom: "Common area is colonised by the nearest subgroup; distant members form separate gathering spots" },
+    ],
+    color: "#e07a20"
+  },
+  131: {
+    name: "The Flow Through Rooms",
+    confidence: "**",
+    problem: "[Page blocked by content filter — text not available]",
+    solution: "As far as possible, avoid the use of corridors and passages. Instead, use public rooms and common rooms as rooms for movement and for gathering. Place the common rooms to form a chain, or loop, so that it becomes possible to walk from room to room.",
+    forces: [
+      { name: "movement efficiency vs. spatial vitality", type: "movement", pole_a: "the need to move efficiently through a building from room to room", pole_b: "the need for rooms to feel alive, inhabited, and connected rather than sterile" },
+      { name: "privacy vs. connection", type: "privacy", pole_a: "the need for private rooms to be sheltered and undisturbed", pole_b: "the need for rooms to feel connected to the larger life of the building" },
+      { name: "generous circulation vs. compact plan", type: "spatial", pole_a: "the desire for wide, ample, looping paths that feel generous and inviting", pole_b: "the practical pressure to minimise wasted floor area in a building" },
+      { name: "directionality vs. freedom of movement", type: "movement", pole_a: "a linear chain of rooms that creates clear sequential movement", pole_b: "the ability to approach destinations from multiple directions and move freely" },
+    ],
+    rules: [
+      { metric: "Use of corridors and passages", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "avoid entirely wherever possible", source_text: "As far as possible, avoid the use of corridors and passages." },
+      { metric: "Common room arrangement", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "chain or loop configuration", source_text: "place the common rooms to form a chain, or loop" },
+      { metric: "Private room access", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "open directly off public/common loop rooms", source_text: "private rooms open directly off these public rooms" },
+      { metric: "Circulation character", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "wide, ample, generous loop with views of fires and great windows", source_text: "a feeling of great generosity, passing in a wide and ample loop" },
+    ],
+    failures: [
+      { description: "When corridors are used instead of common rooms for circulation, the building feels dead and movement becomes purely functional transit.", symptom: "Corridors go unused except for transit; common rooms lose vitality" },
+      { description: "When common rooms are arranged in a dead-end chain without a loop, occupants must retrace their path to exit.", symptom: "Rooms at the end of the chain feel remote and cut off" },
+    ],
+    color: "#9b59b6"
+  },
+  136: {
+    name: "Couple's Realm",
+    confidence: "**",
+    problem: "The presence of children in a family often destroys the closeness and the special privacy which a man and wife need together.",
+    solution: "Make a special part of the house distinct from the common areas and all the children's rooms, where the man and woman of the house can be together in private. Give this place a quick path to the children's rooms, but, at all costs, make it a distinctly separate realm.",
+    forces: [
+      { name: "couple privacy vs. parental accessibility", type: "privacy", pole_a: "the couple needs a protected, intimate world insulated from children's presence", pole_b: "parents need to remain close enough to respond quickly to children in emergencies" },
+      { name: "acoustic privacy vs. open household", type: "spatial", pole_a: "thin shared walls allow children to hear and interrupt the couple's private life", pole_b: "a fully sealed, remote realm would isolate the couple from household life" },
+      { name: "couple identity vs. parental role", type: "social", pole_a: "the adult relationship between partners requires its own space, time, and shared private life", pole_b: "parenthood and child-rearing dominate household attention when no separate realm exists" },
+      { name: "territorial completeness vs. spatial economy", type: "territorial", pole_a: "the couple's realm must be a complete domain: sitting, sleeping, dressing, bathing", pole_b: "space in a family home is finite and pressure exists to reduce it to merely a bedroom" },
+    ],
+    rules: [
+      { metric: "Separation from children's rooms", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "psychologically far and acoustically buffered", source_text: "at all costs, make it a distinctly separate realm" },
+      { metric: "Path to children's rooms", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "quick/direct route must exist", source_text: "Give this place a quick path to the children's rooms" },
+      { metric: "Wall acoustic quality", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "walls must provide acoustic privacy; standard thin walls insufficient", source_text: "The walls of the master bedroom are usually too thin" },
+      { metric: "Privacy buffer at entrance", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "double door or ante-room at entry", source_text: "it needs some kind of a double door, an ante-room" },
+    ],
+    failures: [
+      { description: "When children can circulate freely through the entire house, they dominate all spaces and no room remains private for the couple.", symptom: "Couple's private life is continually interrupted; parental role permeates all aspects" },
+      { description: "When bedroom walls are acoustically thin, the couple is constantly aware of children nearby and cannot achieve intimacy.", symptom: "Private life is permeated by parental awareness; the couple cannot speak privately" },
+      { description: "When the couple's realm is reduced to only a bedroom, it fails to function as a complete private world.", symptom: "Conversation, projects, and relaxation have no protected place; couple reverts to shared family spaces" },
+    ],
+    color: "#c0392b"
+  },
+  143: {
+    name: "Bed Cluster",
+    confidence: "*",
+    problem: "Every child in the family needs a private place, generally centered around the bed. But in many cultures, perhaps all cultures, young children feel isolated if they sleep alone, if their sleeping area is too private.",
+    solution: "[Solution statement not available — page blocked by content filter]",
+    forces: [
+      { name: "privacy vs. companionship (children's sleep)", type: "social", pole_a: "each child needs a private, individual place centered around their own bed", pole_b: "young children feel isolated and anxious if their sleeping area is too private" },
+      { name: "shared space vs. individual territory", type: "territorial", pole_a: "shared bedroom allows companionship but creates conflict over possessions", pole_b: "fully isolated private rooms eliminate conflict but produce loneliness" },
+      { name: "individual ownership vs. communal play", type: "social", pole_a: "children are jealous of their toys and need a defensible personal space", pole_b: "children also need shared space for play and social interaction with siblings" },
+      { name: "enclosure vs. openness (sleeping alcove)", type: "spatial", pole_a: "the sleeping alcove must feel enclosed and sheltered to provide security", pole_b: "the sleeping area must not be so enclosed that the child feels cut off" },
+    ],
+    rules: [
+      { metric: "Sleeping configuration type", rule_type: "soft_preference", mutability: "invariant", preferred_value: "cluster of individual alcoves around a common playspace — not shared room, not isolated rooms", source_text: "both extremes are bad; some version of the cluster of alcoves is needed" },
+      { metric: "Relationship of alcoves to common area", rule_type: "hard_constraint", mutability: "invariant", preferred_value: "individual alcoves must be clustered around and open onto a shared central playspace", source_text: "a kind of configuration in which children have their own, small, private spaces clustered around a common playspace" },
+      { metric: "Light provision", rule_type: "soft_preference", mutability: "site-adaptive", preferred_value: "light on two sides of the cluster space", source_text: "Give the entire space LIGHT ON TWO SIDES (159)." },
+    ],
+    failures: [
+      { description: "When all children share one undivided bedroom, they fight constantly over possessions, light, and activities, with no defensible personal territory.", symptom: "Chronic sibling conflict; no child can have quiet or personal space" },
+      { description: "When each child has a fully separate private room, young children feel isolated and lonely during sleeping hours.", symptom: "Children feel abandoned or anxious at night" },
+      { description: "When sleeping alcoves are not connected to a shared playspace, children lose both the private retreat and the communal connection.", symptom: "The arrangement reverts to either shared-room or isolated-room failure modes" },
+    ],
+    color: "#1abc9c"
+  }
+};
+
+const EXTERNAL_NAMES = {
+  61:"Small Public Squares", 75:"The Family", 77:"House for a Couple",
+  103:"Forming a Group", 105:"South Facing Outdoors", 106:"Positive Outdoor Space",
+  119:"Arcades", 127:"Intimacy Gradient", 130:"Entrance Room",
+  132:"Short Passages", 133:"Staircase as a Stage", 134:"Zen View",
+  135:"Tapestry of Light and Dark", 137:"Children's Realm", 138:"Sleeping to the East",
+  139:"Farmhouse Kitchen", 142:"Sequence of Sitting Spaces", 144:"Bathing Room",
+  147:"Communal Eating", 154:"Room Layout", 157:"Home Workshop",
+  159:"Light on Two Sides", 161:"Sunny Place", 162:"North Face",
+  163:"Outdoor Room", 181:"The Fire", 183:"Workspace Enclosure",
+  185:"Sitting Circle", 186:"Communal Sleeping", 187:"Marriage Bed",
+  188:"Bed Alcove", 189:"Dressing Room", 191:"Shape of Indoor Space",
+  196:"Corner Doors", 198:"Closets Between Rooms", 199:"Sunny Counter",
+  203:"Child Caves", 224:"Low Doorway", 236:"Windows Which Open Wide"
+};
+
+// Raw edge data (source → target)
+const RAW_EDGES = [
+  // Pattern 76
+  { s:76, t:75, r:"required" }, { s:76, t:77, r:"required" },
+  { s:76, t:103, r:"required" }, { s:76, t:106, r:"required" },
+  // Pattern 128
+  { s:128, t:105, r:"required" }, { s:128, t:127, r:"required" },
+  { s:128, t:138, r:"enhanced_by" }, { s:128, t:161, r:"enhanced_by" },
+  { s:128, t:162, r:"enhanced_by" }, { s:128, t:163, r:"enhanced_by" },
+  { s:128, t:199, r:"enhanced_by" }, { s:128, t:236, r:"enhanced_by" },
+  // Pattern 129
+  { s:129, t:139, r:"required" }, { s:129, t:147, r:"required" },
+  { s:129, t:181, r:"required" }, { s:129, t:163, r:"required" },
+  { s:129, t:159, r:"enhanced_by" }, { s:129, t:191, r:"enhanced_by" },
+  { s:129, t:142, r:"enhanced_by" }, { s:129, t:131, r:"enhanced_by" },
+  { s:129, t:132, r:"enhanced_by" },
+  // Pattern 131
+  { s:131, t:196, r:"required" }, { s:131, t:132, r:"enhanced_by" },
+  { s:131, t:130, r:"enhanced_by" }, { s:131, t:133, r:"enhanced_by" },
+  { s:131, t:159, r:"enhanced_by" },
+  // Pattern 136
+  { s:136, t:127, r:"required" }, { s:136, t:185, r:"required" },
+  { s:136, t:187, r:"required" }, { s:136, t:76, r:"enhanced_by" },
+  { s:136, t:138, r:"enhanced_by" }, { s:136, t:144, r:"enhanced_by" },
+  { s:136, t:159, r:"enhanced_by" }, { s:136, t:189, r:"enhanced_by" },
+  { s:136, t:191, r:"enhanced_by" },
+  // Pattern 143
+  { s:143, t:136, r:"required" }, { s:143, t:137, r:"required" },
+  { s:143, t:138, r:"required" }, { s:143, t:188, r:"required" },
+  { s:143, t:159, r:"required" }, { s:143, t:191, r:"required" },
+  { s:143, t:186, r:"enhanced_by" }, { s:143, t:189, r:"enhanced_by" },
+  { s:143, t:203, r:"enhanced_by" },
+];
+
+// ─────────────────────────────────────────────
+// FORCE TYPE COLOURS
+// ─────────────────────────────────────────────
+const FORCE_COLORS = {
+  social:      { bg:"#1a2440", text:"#8abcff", border:"#2a4060" },
+  spatial:     { bg:"#251a40", text:"#c8a0ff", border:"#402a60" },
+  dimensional: { bg:"#1a3025", text:"#80d0a0", border:"#2a5030" },
+  light:       { bg:"#3a3010", text:"#ffd060", border:"#605020" },
+  movement:    { bg:"#3a2010", text:"#ffa060", border:"#604020" },
+  privacy:     { bg:"#301025", text:"#ff88cc", border:"#501040" },
+  territorial: { bg:"#301010", text:"#ff8080", border:"#501010" },
+  temporal:    { bg:"#1a1a1a", text:"#aaaaaa", border:"#333333" },
+};
+
+// ─────────────────────────────────────────────
+// BUILD GRAPH DATA
+// ─────────────────────────────────────────────
+
+function buildGraph(showExternal) {
+  const loadedIds = new Set(Object.keys(LOADED).map(Number));
+  const usedExternal = new Set();
+
+  if (showExternal) {
+    RAW_EDGES.forEach(e => {
+      if (!loadedIds.has(e.t)) usedExternal.add(e.t);
+    });
+  }
+
+  const nodes = [];
+  Object.entries(LOADED).forEach(([id, d]) => {
+    nodes.push({ id: +id, type: "loaded", name: d.name, color: d.color });
+  });
+  usedExternal.forEach(id => {
+    nodes.push({ id, type: "external", name: EXTERNAL_NAMES[id] || "Pattern " + id });
+  });
+
+  const nodeIds = new Set(nodes.map(n => n.id));
+  const links = RAW_EDGES
+    .filter(e => nodeIds.has(e.s) && nodeIds.has(e.t))
+    .map(e => ({ source: e.s, target: e.t, rel: e.r }));
+
+  return { nodes, links };
+}
+
+// ─────────────────────────────────────────────
+// VIZ
+// ─────────────────────────────────────────────
+
+let showExternal = true;
+let edgeFilter = { required: true, enhanced_by: true };
+let activeNode = null;
+
+const svg = d3.select("#svg");
+const container = svg.append("g");
+
+// Zoom
+svg.call(d3.zoom().scaleExtent([0.15, 3]).on("zoom", e => {
+  container.attr("transform", e.transform);
+}));
+
+// Arrow markers
+const defs = svg.append("defs");
+function addMarker(id, color) {
+  defs.append("marker")
+    .attr("id", id)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 22)
+    .attr("refY", 0)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .attr("fill", color)
+    .attr("class", "link-arrow");
+}
+addMarker("arrow-required",    "#e55");
+addMarker("arrow-enhanced_by", "#4c9");
+addMarker("arrow-ext-required",    "#a33");
+addMarker("arrow-ext-enhanced_by", "#2a6");
+
+const markerFor = (rel, isInternal) => `url(#arrow-${isInternal ? "" : "ext-"}${rel})`;
+
+let linkG, nodeG, simulation;
+let data = buildGraph(showExternal);
+
+function render() {
+  data = buildGraph(showExternal);
+  const filteredLinks = data.links.filter(l => edgeFilter[l.rel]);
+
+  container.selectAll("*").remove();
+
+  // Simulation
+  simulation = d3.forceSimulation(data.nodes)
+    .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(d => {
+      const sLoaded = LOADED[d.source.id || d.source];
+      const tLoaded = LOADED[d.target.id || d.target];
+      return (sLoaded && tLoaded) ? 180 : 110;
+    }).strength(0.6))
+    .force("charge", d3.forceManyBody().strength(d => d.type === "loaded" ? -600 : -120))
+    .force("center", d3.forceCenter(
+      document.getElementById("graph-area").clientWidth / 2,
+      document.getElementById("graph-area").clientHeight / 2
+    ))
+    .force("collide", d3.forceCollide().radius(d => d.type === "loaded" ? 52 : 28));
+
+  // Links
+  linkG = container.append("g").selectAll("line")
+    .data(filteredLinks)
+    .join("line")
+    .attr("class", d => `link ${d.rel}`)
+    .attr("stroke-dasharray", d => d.rel === "incompatible" ? "5,4" : null)
+    .attr("marker-end", d => {
+      const sLoaded = !!LOADED[d.source.id || d.source];
+      const tLoaded = !!LOADED[d.target.id || d.target];
+      return markerFor(d.rel, sLoaded && tLoaded);
+    });
+
+  // Nodes
+  nodeG = container.append("g").selectAll("g")
+    .data(data.nodes, d => d.id)
+    .join("g")
+    .attr("class", d => `node-${d.type}`)
+    .call(d3.drag()
+      .on("start", (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on("drag",  (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on("end",   (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+    )
+    .on("click", (e, d) => {
+      e.stopPropagation();
+      if (d.type === "loaded") selectPattern(d.id);
+    });
+
+  // Loaded circles
+  nodeG.filter(d => d.type === "loaded").append("circle")
+    .attr("r", 36)
+    .attr("fill", d => d.color + "33")
+    .attr("stroke", d => d.color);
+
+  // External circles
+  nodeG.filter(d => d.type === "external").append("circle")
+    .attr("r", 16)
+    .attr("fill", "#1e1e2e")
+    .attr("stroke", "#444");
+
+  // Loaded labels (number + name)
+  const loadedLabel = nodeG.filter(d => d.type === "loaded").append("text").attr("class", "label-loaded");
+  loadedLabel.append("tspan").attr("class", "num").attr("x", 0).attr("dy", "-0.3em").text(d => d.id);
+  loadedLabel.append("tspan").attr("x", 0).attr("dy", "1.2em").text(d => {
+    const words = d.name.split(" ");
+    return words.length > 3 ? words.slice(0, 2).join(" ") + "…" : d.name;
+  });
+
+  // External labels
+  nodeG.filter(d => d.type === "external").append("text")
+    .attr("class", "label-external")
+    .attr("dy", "0.32em")
+    .text(d => d.id);
+
+  // Tick
+  simulation.on("tick", () => {
+    linkG
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y);
+    nodeG.attr("transform", d => `translate(${d.x},${d.y})`);
+  });
+
+  // Re-apply active highlight
+  if (activeNode) highlightNode(activeNode);
+}
+
+svg.on("click", () => {
+  activeNode = null;
+  container.selectAll(".node-loaded").classed("active", false);
+  document.getElementById("panel").classList.add("hidden");
+});
+
+function highlightNode(id) {
+  container.selectAll(".node-loaded").classed("active", d => d.id === id);
+}
+
+function selectPattern(id) {
+  activeNode = id;
+  highlightNode(id);
+  fillPanel(id);
+  document.getElementById("panel").classList.remove("hidden");
+}
+
+function fillPanel(id) {
+  const p = LOADED[id];
+  document.getElementById("panel-num").textContent = `Pattern ${id}`;
+  document.getElementById("panel-name").textContent = p.name;
+  document.getElementById("panel-confidence").innerHTML =
+    `Confidence <span style="color:${confidenceColor(p.confidence)}">${p.confidence}</span>`;
+
+  const body = document.getElementById("panel-body");
+  body.innerHTML = "";
+
+  // Verbatim
+  body.appendChild(section("Verbatim", `
+    <div class="verbatim-block">
+      <div class="verbatim-label">Problem</div>
+      ${esc(p.problem)}
+    </div>
+    <div class="verbatim-block">
+      <div class="verbatim-label">Solution (Therefore:)</div>
+      ${esc(p.solution)}
+    </div>
+  `));
+
+  // Forces
+  const forcesHtml = p.forces.map(f => {
+    const fc = FORCE_COLORS[f.type] || FORCE_COLORS.social;
+    return `
+      <div class="force-card">
+        <div class="force-header">
+          <span class="force-type-badge" style="background:${fc.bg};color:${fc.text};border:1px solid ${fc.border}">${f.type}</span>
+          <span class="force-name">${esc(f.name)}</span>
+        </div>
+        <div class="poles">
+          <div class="pole pole-a">${esc(f.pole_a)}</div>
+          <div class="pole pole-b">${esc(f.pole_b)}</div>
+        </div>
+      </div>`;
+  }).join("");
+  body.appendChild(section(`Forces (${p.forces.length})`, forcesHtml));
+
+  // Rules
+  const rulesHtml = p.rules.map(r => {
+    let valueStr = "";
+    if (r.value !== undefined) {
+      valueStr = `${r.operator ? r.operator + " " : ""}${r.value}${r.unit ? " " + r.unit : ""}`;
+    } else if (r.preferred_value) {
+      valueStr = r.preferred_value;
+    }
+    return `
+      <div class="rule-row">
+        <div class="rule-header">
+          <span class="rule-badge ${r.rule_type === "hard_constraint" ? "hard" : "soft"}">${r.rule_type === "hard_constraint" ? "hard" : "soft"}</span>
+          <span class="rule-badge ${r.mutability === "invariant" ? "inv" : "adp"}">${r.mutability === "invariant" ? "invariant" : "adaptive"}</span>
+          <span class="rule-metric">${esc(r.metric)}</span>
+        </div>
+        ${valueStr ? `<div class="rule-value">${esc(valueStr)}</div>` : ""}
+        ${r.source_text ? `<div class="rule-source">"${esc(r.source_text)}"</div>` : ""}
+      </div>`;
+  }).join("");
+  body.appendChild(section(`Typed Rules (${p.rules.length})`, rulesHtml));
+
+  // Failures
+  const failHtml = p.failures.map(f => `
+    <div class="failure-row">
+      <div class="failure-desc">${esc(f.description)}</div>
+      <div class="failure-sym">${esc(f.symptom)}</div>
+    </div>`).join("");
+  body.appendChild(section(`Failure Modes (${p.failures.length})`, failHtml));
+}
+
+function section(title, html) {
+  const div = document.createElement("div");
+  div.className = "section";
+  div.innerHTML = `<div class="section-title">${title}</div>${html}`;
+  return div;
+}
+
+function esc(s) {
+  if (!s) return "";
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function confidenceColor(c) {
+  return { "*":"#f88", "**":"#fa0", "***":"#4d4" }[c] || "#888";
+}
+
+// ─────────────────────────────────────────────
+// CONTROLS
+// ─────────────────────────────────────────────
+
+document.querySelectorAll("[data-edge]").forEach(cb => {
+  cb.addEventListener("change", () => {
+    edgeFilter[cb.dataset.edge] = cb.checked;
+    render();
+  });
+});
+
+document.getElementById("btn-external").addEventListener("click", function() {
+  showExternal = !showExternal;
+  this.classList.toggle("active", showExternal);
+  this.textContent = showExternal ? "Show external patterns" : "Hide external patterns";
+  render();
+});
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
