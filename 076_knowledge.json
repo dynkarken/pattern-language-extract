@@ -1,0 +1,249 @@
+{
+  "pattern_name": "House for a Small Family",
+  "pattern_number": 76,
+  "verbatim": {
+    "problem_statement": "The problem we are trying to solve is that a small family needs several different kinds of spaces, each suited to a different way of being together, yet they must all be connected to form one coherent house.",
+    "solution_statement": "Arrange the house in the form of a small cluster of pavilions arranged around a courtyard. Each pavilion should be devoted to a single activity and should overlook the courtyard. The pavilions should be placed so that all the rooms which face the courtyard get maximum sun, and so that there are quiet corners in the courtyard where people can sit.",
+    "confidence_rating": "**"
+  },
+  "forces": [
+    {
+      "name": "family unity vs. individual privacy",
+      "type": "social",
+      "pole_a": "the need to share meals, gather, and supervise children in common space",
+      "pole_b": "the need for adults and children to retreat, work alone, rest, or seek refuge",
+      "description": "The family must function as a coherent unit while each member also requires distinct, separable space for private activity",
+      "resolved_by": "distinct pavilions for separate activities grouped around a shared courtyard that acts as the unifying outdoor room"
+    },
+    {
+      "name": "functional separation vs. spatial coherence",
+      "type": "spatial",
+      "pole_a": "each activity (sleeping, cooking, living) benefits from its own distinct, acoustically and visually separated zone",
+      "pole_b": "the house must read as one coherent dwelling, not a collection of disconnected buildings",
+      "description": "Dividing the house into pavilions risks fragmentation; leaving it open risks functional interference between activities",
+      "resolved_by": "pavilion cluster arrangement where courtyard provides visual and circulatory connection between all separate units"
+    },
+    {
+      "name": "child supervision vs. child outdoor freedom",
+      "type": "social",
+      "pole_a": "young children need secure outdoor play space away from adult interior activity",
+      "pole_b": "adults need to be able to supervise children without constant physical presence",
+      "description": "Children require outdoor space for development but cannot be left unsupervised; adults cannot remain outdoors at all times",
+      "resolved_by": "courtyard bounded by building edges, visible from kitchen and key rooms, providing secure play area with passive supervision sightlines"
+    },
+    {
+      "name": "generous feeling vs. modest footprint",
+      "type": "economic-spatial",
+      "pole_a": "a small family needs spaces that feel generous, well-lit, and comfortable for varied activities",
+      "pole_b": "the house must fit within a modest budget and total floor area of 800\u20131200 square feet",
+      "description": "Spatial quality and affordability pull against each other; the house cannot simply be large to feel good",
+      "resolved_by": "courtyard effectively extends livable area outdoors in temperate climates; high ceilings and south-facing orientation enhance perceived spaciousness without increasing footprint"
+    },
+    {
+      "name": "morning routine flow vs. evening leisure flow",
+      "type": "temporal-spatial",
+      "pole_a": "morning use requires rapid sequential access to bathroom, kitchen, and exit routes with high throughput",
+      "pole_b": "evening use requires slow, overlapping, relaxed occupation of common and private areas simultaneously",
+      "description": "The same spaces must support radically different circulation patterns and occupancy modes at different times of day",
+      "resolved_by": "pavilion arrangement separates zones of activity so morning and evening flows operate through different spatial sequences without mutual obstruction"
+    }
+  ],
+  "typed_rules": [
+    {
+      "metric": "Total house area",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "74.3\u2013111.5 m\u00b2",
+      "unit": "m\u00b2",
+      "rationale": "Typical range for a small family house; adapts to family size and budget",
+      "source_text": "Total area: 800-1200 square feet"
+    },
+    {
+      "metric": "Living pavilion area",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "23.2\u201332.5 m\u00b2",
+      "unit": "m\u00b2",
+      "rationale": "Living area must feel generous as primary gathering space despite modest total footprint",
+      "source_text": "Living pavilion: 250-350 sq ft with 10-12 ft ceilings"
+    },
+    {
+      "metric": "Living pavilion ceiling height",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "3.05\u20133.66 m",
+      "unit": "m",
+      "rationale": "Higher ceilings enhance perceived spaciousness of primary gathering room",
+      "source_text": "High ceilings (10-12 feet), good natural light, and views outward all enhance the feeling of space"
+    },
+    {
+      "metric": "Bedroom pavilion area",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "11.1\u201316.7 m\u00b2 per room",
+      "unit": "m\u00b2",
+      "rationale": "Bedrooms serve sleep and refuge; must accommodate individual activities beyond sleep",
+      "source_text": "Bedroom pavilions: 120-180 sq ft each (two bedrooms typical)"
+    },
+    {
+      "metric": "Bedroom ceiling height",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "2.44\u20133.05 m",
+      "unit": "m",
+      "rationale": "Natural light and vertical space support bedroom use as refuge and activity space",
+      "source_text": "Bedroom dimensions: 120-180 square feet per room; 8-10 foot ceilings"
+    },
+    {
+      "metric": "Kitchen area",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "9.3\u201313.9 m\u00b2",
+      "unit": "m\u00b2",
+      "rationale": "Kitchen as social hub requires sufficient space for cooking while supervising children",
+      "source_text": "Kitchen size: 100-150 square feet; open to courtyard preferred"
+    },
+    {
+      "metric": "Kitchen visual connection to play areas",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "required",
+      "value": "direct sightlines from kitchen to courtyard play areas",
+      "unit": "qualitative",
+      "rationale": "Parents must be able to supervise children while cooking; sightline to play area is non-negotiable",
+      "source_text": "The kitchen pavilion connects both indoor and outdoor spaces, with views to play areas"
+    },
+    {
+      "metric": "Courtyard area",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "27.9\u201337.2 m\u00b2",
+      "unit": "m\u00b2",
+      "rationale": "Courtyard must be large enough to function as outdoor room and play space but small enough to retain enclosure",
+      "source_text": "Courtyard size: 300-400 square feet"
+    },
+    {
+      "metric": "Courtyard short side minimum dimension",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "min",
+      "value": 4.57,
+      "unit": "m",
+      "rationale": "Below this dimension the courtyard cannot function as a usable outdoor room or play space",
+      "source_text": "minimum 15-20 feet on short side"
+    },
+    {
+      "metric": "Courtyard solar orientation",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "south-facing in northern hemisphere",
+      "unit": "qualitative",
+      "rationale": "Maximises sun access to courtyard and rooms facing it; adapt to hemisphere and local climate",
+      "source_text": "The pavilions should be placed so that all the rooms which face the courtyard get maximum sun"
+    },
+    {
+      "metric": "Courtyard climate usability",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "effectively doubles livable space during much of the year",
+      "unit": "qualitative",
+      "rationale": "In temperate climates a well-designed courtyard extends usable area significantly; benefit varies by climate zone",
+      "source_text": "In temperate climates, well-designed courtyards can effectively double the livable space during much of the year"
+    },
+    {
+      "metric": "Courtyard enclosure",
+      "rule_type": "hard_constraint",
+      "mutability": "invariant",
+      "operator": "required",
+      "value": "bounded on 3\u20134 sides by building edges",
+      "unit": "qualitative",
+      "rationale": "Courtyard only creates positive outdoor space and passive supervision sightlines when sufficiently enclosed by pavilion walls",
+      "source_text": "The courtyard is not merely aesthetic but functional\u2014it extends the usable living area, provides secure outdoor play space visible from key rooms"
+    },
+    {
+      "metric": "Circulation and transition area",
+      "rule_type": "soft_preference",
+      "mutability": "site-adaptive",
+      "preferred_value": "4.6\u20139.3 m\u00b2",
+      "unit": "m\u00b2",
+      "rationale": "Transition zones between pavilions support shift from one activity mode to another",
+      "source_text": "Circulation/transitions: 50-100 sq ft"
+    }
+  ],
+  "adjacency_rules": [
+    {
+      "target_pattern_number": 61,
+      "target_pattern_name": "Small Public Squares",
+      "relationship": "analogous",
+      "note": "Similar principle of creating bounded outdoor gathering space at a larger urban scale; courtyard applies same enclosure logic"
+    },
+    {
+      "target_pattern_number": 75,
+      "target_pattern_name": "The Family",
+      "relationship": "prerequisite",
+      "note": "Establishes the social unit and its needs that Pattern 76 is designed to house; must be resolved before this pattern is applied"
+    },
+    {
+      "target_pattern_number": 77,
+      "target_pattern_name": "Shelter and Privacy Gradients (77\u201381)",
+      "relationship": "required",
+      "note": "Patterns 77\u201381 define the gradient from public to private space within and adjacent to the house; pavilion arrangement must implement these gradients"
+    },
+    {
+      "target_pattern_number": 103,
+      "target_pattern_name": "Forming a Group of Buildings",
+      "relationship": "required",
+      "note": "Pavilion cluster is a direct instance of forming a group of buildings; courtyard geometry must follow Pattern 103 principles"
+    },
+    {
+      "target_pattern_number": 106,
+      "target_pattern_name": "Positive Outdoor Space",
+      "relationship": "required",
+      "note": "Courtyard only functions as outdoor room when it forms positive space bounded by building edges; Pattern 106 governs courtyard geometry"
+    },
+    {
+      "target_pattern_number": 154,
+      "target_pattern_name": "Room Layout Considerations",
+      "relationship": "recommended",
+      "note": "Internal room layout within each pavilion should follow Pattern 154 to ensure furniture placement and circulation work within the allocated dimensions"
+    }
+  ],
+  "failure_modes": [
+    {
+      "description": "When the courtyard is too small on its short side it cannot accommodate outdoor play or function as a social gathering space; it becomes a gap between buildings rather than a room.",
+      "violated_rule": "Courtyard short side minimum dimension",
+      "symptom": "Children have no usable outdoor play area; adults do not use the courtyard; family activity collapses into single interior room",
+      "source_text": "minimum 15-20 feet on short side"
+    },
+    {
+      "description": "When pavilions are arranged without enclosing the courtyard on at least three sides, the outdoor space loses enclosure and becomes an open lawn with no sense of being a room, reducing its social and supervisory value.",
+      "violated_rule": "Courtyard enclosure",
+      "symptom": "Outdoor space goes unused; children cannot be passively supervised from kitchen; family loses the extended livable area the courtyard was meant to provide",
+      "source_text": "The courtyard is not merely aesthetic but functional\u2014it extends the usable living area, provides secure outdoor play space visible from key rooms, and creates natural gathering points"
+    },
+    {
+      "description": "When the kitchen has no sightline to play areas, parents must physically leave the kitchen to check on children, interrupting cooking and creating anxiety about child safety.",
+      "violated_rule": "Kitchen visual connection to play areas",
+      "symptom": "Children are confined indoors to remain visible; adults cook in isolated utility-room conditions; kitchen loses its role as social hub",
+      "source_text": "Parents cook while supervising children; the space works best with views to play areas and sitting rooms"
+    },
+    {
+      "description": "When bedroom pavilions are not acoustically separated from common areas, residents cannot use bedrooms as refuge spaces for reading, quiet work, or emotional withdrawal.",
+      "violated_rule": "Bedroom pavilion area",
+      "symptom": "Family members have no private retreat; sound from common areas penetrates bedrooms; the bedroom functions only as a sleep room, not a refuge",
+      "source_text": "Bedrooms serve not just sleep but also refuge\u2014places to read, pursue hobbies, cry, or escape. They work best with natural light and some sound privacy"
+    },
+    {
+      "description": "When the living pavilion has low ceilings and insufficient area it fails to feel generous, causing the primary gathering space to feel cramped and causing the family to avoid using it for extended leisure or social activity.",
+      "violated_rule": "Living pavilion ceiling height",
+      "symptom": "Family avoids the living room for relaxed gathering; rooms feel oppressive rather than generous despite adequate square footage; social life migrates to kitchen or outdoors",
+      "source_text": "High ceilings (10-12 feet), good natural light, and views outward all enhance the feeling of space. Living area: 250-350 square feet"
+    },
+    {
+      "description": "When the courtyard faces away from the sun, rooms overlooking it receive insufficient natural light and the outdoor space is cold and unused in cooler months, eliminating its potential to double the effective livable area.",
+      "violated_rule": "Courtyard solar orientation",
+      "symptom": "Courtyard unused in winter and shoulder seasons; rooms feel dark despite opening onto outdoor space; the spatial and economic advantage of the courtyard is nullified",
+      "source_text": "In temperate climates, well-designed courtyards can effectively double the livable space during much of the year"
+    }
+  ]
+}
