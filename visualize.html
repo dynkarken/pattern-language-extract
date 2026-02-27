@@ -360,6 +360,140 @@
     z-index: 10;
   }
 
+  /* ── Strain rings ── */
+  .strain-ring {
+    fill: none;
+    stroke-width: 1.5;
+    pointer-events: none;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .strain-none { stroke: none; }
+  .strain-low {
+    stroke: #b07020;
+    stroke-opacity: 0.45;
+    stroke-dasharray: 10 5;
+    animation: strain-spin 14s linear infinite;
+  }
+  .strain-mid {
+    stroke: #c04810;
+    stroke-opacity: 0.65;
+    stroke-dasharray: 8 4;
+    animation: strain-spin 7s linear infinite, strain-pulse 3s ease-in-out infinite;
+  }
+  .strain-high {
+    stroke: #b81818;
+    stroke-opacity: 0.8;
+    stroke-dasharray: 6 3;
+    animation: strain-spin 3.5s linear infinite, strain-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes strain-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes strain-pulse {
+    0%, 100% { stroke-opacity: 0.8; }
+    50%       { stroke-opacity: 0.1; }
+  }
+
+  /* ── Tension panel section ── */
+  .tension-section { padding: 14px 20px 0; }
+  .tension-section-title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7a3820;
+    border-bottom: 1px solid #2a1510;
+    padding-bottom: 6px;
+    margin-bottom: 0;
+  }
+  .tension-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #1a0e0a;
+  }
+  .tension-item:last-child { border-bottom: none; }
+  .tension-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 4px;
+  }
+  .tension-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .tension-open  { background: #3a0a0a; color: #e06040; border: 1px solid #600; }
+  .tension-noted { background: #0a1a0a; color: #50a030; border: 1px solid #183010; }
+  .tension-target-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #c07850;
+    line-height: 1.35;
+  }
+  .tension-item.tension-acked .tension-target-name { color: #608050; }
+  .tension-note {
+    font-size: 10px;
+    color: #666;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .tension-annotation {
+    background: #080810;
+    border: 1px solid #2a1a10;
+    border-radius: 3px;
+    color: #aaa;
+    font-family: Georgia, serif;
+    font-size: 10px;
+    line-height: 1.5;
+    padding: 6px 8px;
+    resize: vertical;
+    min-height: 44px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .tension-annotation:focus { outline: none; border-color: #5a2a10; }
+  .tension-annotation::placeholder { color: #383020; font-style: italic; }
+  .tension-annotation-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .tension-save-btn {
+    align-self: flex-end;
+    background: #180808;
+    border: 1px solid #481808;
+    border-radius: 3px;
+    color: #c06030;
+    cursor: pointer;
+    font-family: Georgia, serif;
+    font-size: 10px;
+    padding: 3px 10px;
+    transition: background 0.1s;
+  }
+  .tension-save-btn:hover { background: #281008; color: #e08040; }
+  .tension-ann-display {
+    font-size: 10px;
+    color: #50803a;
+    font-style: italic;
+    line-height: 1.45;
+    margin-top: 2px;
+    padding: 4px 0;
+  }
+  .tension-edit-btn {
+    background: none;
+    border: none;
+    color: #385828;
+    cursor: pointer;
+    font-family: Georgia, serif;
+    font-size: 9px;
+    padding: 2px 0;
+    text-decoration: underline;
+    text-align: left;
+  }
+  .tension-edit-btn:hover { color: #508038; }
+
   /* ── Compass overlay ── */
   #compass-wrap {
     display: none;
@@ -714,6 +848,76 @@ const RAW_EDGES = [
 ];
 
 // ─────────────────────────────────────────────
+// TENSION NOTES
+// Why each required relationship matters — drawn verbatim from the
+// adjacency_rules notes in the knowledge JSON files. Keyed "{source}-{target}".
+// ─────────────────────────────────────────────
+
+const TENSION_NOTES = {
+  "76-75":   "Establishes the social unit and its needs — 'The Family' pattern must be resolved before this one can be properly applied.",
+  "76-77":   "Defines the gradient from public to private space within the house; the pavilion arrangement must implement these gradients.",
+  "76-103":  "The pavilion cluster is a direct instance of forming a group of buildings; its courtyard geometry must follow Pattern 103 principles.",
+  "76-106":  "The courtyard only functions as an outdoor room when it forms positive space bounded on three or more sides by building edges.",
+  "128-105": "Pattern 105 establishes the building's southern orientation as prerequisite; Pattern 128 refines the internal room arrangement within that framework.",
+  "128-127": "The intimacy gradient determines the distribution of public and private rooms; indoor sunlight assigns solar exposure within that gradient.",
+  "129-139": "The farmhouse kitchen is the primary common room that anchors the heart of the group.",
+  "129-147": "Communal eating is the central activity the common area exists to support — the space is organised around shared meals.",
+  "129-181": "The fire provides the social and thermal heart around which the common area is organised.",
+  "129-163": "The outdoor room extends the common area outward; paths pass through both indoor and outdoor common space.",
+  "131-196": "Corner doors are required to make rooms flow into each other — without them, rooms become dead-ends with single-entry walls.",
+  "136-127": "The intimacy gradient establishes the position of the couple's realm within the overall pattern of private to public space.",
+  "136-185": "The sitting circle is the key element of the couple's daytime realm — without it, the realm collapses to merely a sleeping room.",
+  "136-187": "The marriage bed is the defining element of the couple's private domain.",
+  "143-136": "The children's bed cluster is positioned within and relative to the couple's realm — not as an independent zone.",
+  "143-137": "The children's realm must be established before the bed cluster can be properly sited within it.",
+  "143-138": "Morning sun marks the transition from sleep to waking; sleeping alcoves of the bed cluster require eastern exposure.",
+  "143-188": "Bed alcoves are the physical implementation of the sleeping component of the cluster.",
+  "143-159": "Light on two sides is required for the shared playspace of the cluster to feel alive and connected.",
+  "143-191": "The shape of indoor space governs how the alcoves and shared playspace relate to each other.",
+};
+
+// ─────────────────────────────────────────────
+// ANNOTATIONS
+// The designer's responses to tension provocations.
+// Persisted in localStorage, keyed "{source}-{target}".
+// ─────────────────────────────────────────────
+
+let ANNOTATIONS = {};
+try { ANNOTATIONS = JSON.parse(localStorage.getItem("pattern-annotations") || "{}"); } catch(e) {}
+
+function saveAnnotation(key, value) {
+  if (value) ANNOTATIONS[key] = value;
+  else delete ANNOTATIONS[key];
+  localStorage.setItem("pattern-annotations", JSON.stringify(ANNOTATIONS));
+}
+
+// Returns { unmet: [...], acknowledged: [...], satisfied: [...] }
+// unmet      — required pattern missing, no note recorded
+// acknowledged — required pattern missing, but designer has recorded a note
+// satisfied  — required pattern is loaded in the graph
+function computeTensions(patternId) {
+  const requiredEdges = RAW_EDGES.filter(e => e.s === patternId && e.r === "required");
+  const out = { unmet: [], acknowledged: [], satisfied: [] };
+  for (const edge of requiredEdges) {
+    if (LOADED[edge.t]) {
+      out.satisfied.push(edge.t);
+    } else {
+      const key = `${patternId}-${edge.t}`;
+      const entry = {
+        target: edge.t,
+        name: EXTERNAL_NAMES[edge.t] || `Pattern ${edge.t}`,
+        note: TENSION_NOTES[key] || "",
+        annotation: ANNOTATIONS[key] || "",
+        key,
+      };
+      if (ANNOTATIONS[key]) out.acknowledged.push(entry);
+      else out.unmet.push(entry);
+    }
+  }
+  return out;
+}
+
+// ─────────────────────────────────────────────
 // FORCE TYPE COLOURS
 // ─────────────────────────────────────────────
 const FORCE_COLORS = {
@@ -1016,7 +1220,14 @@ function render() {
     .attr("pointer-events", "none")
     .attr("display", "none"); // hidden until overlay activated
 
-  // 2. Circle
+  // 2. Strain ring — slow/fast rotating dashed ring, colour and speed scale with
+  //    the number of unaddressed required-relationship gaps for this pattern.
+  //    Updated by updateStrainRings() after render and after each annotation change.
+  nodeG.filter(d => d.type === "loaded").append("circle")
+    .attr("class", "strain-ring strain-none")
+    .attr("r", 46);
+
+  // 3. Circle
   nodeG.filter(d => d.type === "loaded").append("circle")
     .attr("r", 36)
     .attr("fill", d => d.color + "33")
@@ -1063,6 +1274,24 @@ function render() {
 
   // Apply current overlay state to freshly rendered elements
   updateOverlays();
+  updateStrainRings();
+}
+
+// ─────────────────────────────────────────────
+// STRAIN RINGS
+// ─────────────────────────────────────────────
+
+function updateStrainRings() {
+  if (!nodeG) return;
+  nodeG.filter(d => d.type === "loaded").select(".strain-ring")
+    .attr("class", d => {
+      const t = computeTensions(d.id);
+      const n = t.unmet.length;
+      if (n === 0) return "strain-ring strain-none";
+      if (n <= 2)  return "strain-ring strain-low";
+      if (n <= 4)  return "strain-ring strain-mid";
+      return "strain-ring strain-high";
+    });
 }
 
 // ─────────────────────────────────────────────
@@ -1128,6 +1357,63 @@ function fillPanel(id) {
 
   const body = document.getElementById("panel-body");
   body.innerHTML = "";
+
+  // ── Tensions ──
+  const tensions = computeTensions(id);
+  const hasAny = tensions.unmet.length + tensions.acknowledged.length > 0;
+  if (hasAny) {
+    let titleParts = [];
+    if (tensions.unmet.length)       titleParts.push(`${tensions.unmet.length} open`);
+    if (tensions.acknowledged.length) titleParts.push(`${tensions.acknowledged.length} noted`);
+
+    const wrap = document.createElement("div");
+    wrap.className = "tension-section";
+    wrap.innerHTML = `<div class="tension-section-title">Tensions — ${titleParts.join(", ")}</div>`;
+
+    const buildItem = (t, isAcked) => {
+      const div = document.createElement("div");
+      div.className = "tension-item" + (isAcked ? " tension-acked" : "");
+      if (isAcked) {
+        div.innerHTML = `
+          <div class="tension-header">
+            <span class="tension-badge tension-noted">noted</span>
+            <span class="tension-target-name">→ ${t.target}: ${esc(t.name)}</span>
+          </div>
+          <div class="tension-ann-display">${esc(t.annotation)}</div>
+          <button class="tension-edit-btn">revise note</button>`;
+        div.querySelector(".tension-edit-btn").addEventListener("click", () => {
+          saveAnnotation(t.key, "");
+          fillPanel(id);
+          updateStrainRings();
+        });
+      } else {
+        div.innerHTML = `
+          <div class="tension-header">
+            <span class="tension-badge tension-open">open</span>
+            <span class="tension-target-name">→ ${t.target}: ${esc(t.name)}</span>
+          </div>
+          ${t.note ? `<div class="tension-note">${esc(t.note)}</div>` : ""}
+          <div class="tension-annotation-wrap">
+            <textarea class="tension-annotation"
+              placeholder="How does your scheme address this — or is this a deliberate choice?">${esc(t.annotation)}</textarea>
+            <button class="tension-save-btn">Save note</button>
+          </div>`;
+        div.querySelector(".tension-save-btn").addEventListener("click", () => {
+          const val = div.querySelector(".tension-annotation").value.trim();
+          if (val) {
+            saveAnnotation(t.key, val);
+            fillPanel(id);
+            updateStrainRings();
+          }
+        });
+      }
+      return div;
+    };
+
+    tensions.unmet.forEach(t       => wrap.appendChild(buildItem(t, false)));
+    tensions.acknowledged.forEach(t => wrap.appendChild(buildItem(t, true)));
+    body.appendChild(wrap);
+  }
 
   // Verbatim
   body.appendChild(section("Verbatim", `
