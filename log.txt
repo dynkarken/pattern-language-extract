@@ -102,6 +102,12 @@ force fields so patterns actually feel the environment and jostle into the
 collectively optimal arrangement, with stronger preferences winning the prime
 spots and weaker ones yielding.
 
+USER: So incredibly cool! commit and git push
+
+CLAUDE: Already committed and pushed in the last step — the repo is up to
+date. The only untracked items are the test scan directories, which we're
+leaving out intentionally.
+
 [Implemented physics-driven overlays. Solar and privacy overlays now add
 named D3 forces to the simulation. Patterns with stronger preferences exert
 stronger pulls. The collective negotiation emerges from the interaction of:
