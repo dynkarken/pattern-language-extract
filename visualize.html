@@ -732,11 +732,12 @@ const FORCE_COLORS = {
 // ─────────────────────────────────────────────
 
 // Solar orientation preference per pattern (compass bearing: 0=N, 90=E, 180=S, 270=W)
+// strength: 0–1, how strongly this pattern asserts its solar preference in collective negotiation
 const SOLAR_PREF = {
-  76:  { bearing: 180, label: "S" },   // courtyard solar orientation: south-facing
-  128: { bearing: 180, label: "S" },   // Indoor Sunlight — the entire pattern is about south
-  136: { bearing:  90, label: "E" },   // enhanced_by Sleeping to the East (138)
-  143: { bearing:  90, label: "E" },   // requires Sleeping to the East (138)
+  76:  { bearing: 180, strength: 0.60, label: "S" },  // courtyard solar orientation: important but secondary
+  128: { bearing: 180, strength: 1.00, label: "S" },  // Indoor Sunlight — this IS the solar pattern
+  136: { bearing:  90, strength: 0.40, label: "E" },  // enhanced_by Sleeping to the East (138)
+  143: { bearing:  90, strength: 0.50, label: "E" },  // requires Sleeping to the East (138)
 };
 
 // Public → private spectrum: 0 = very public, 1 = very private
@@ -777,6 +778,66 @@ function privacyColor(score) {
   const g = Math.round(187 + ( 71 - 187) * score);
   const b = Math.round(106 + (188 - 106) * score);
   return `rgb(${r},${g},${b})`;
+}
+
+// ─────────────────────────────────────────────
+// ENVIRONMENTAL PHYSICS — FORCE FACTORIES
+// Each factory builds a named D3 force for the current overlay state.
+// Re-registering a force on the simulation triggers D3's initialize(),
+// which re-evaluates and caches strength per node — this is how we
+// dynamically switch forces on/off without a full re-render.
+// ─────────────────────────────────────────────
+
+function makeSolarForceX(cx, w) {
+  // East/west component of solar preference
+  return d3.forceX(d => {
+    if (d.type !== "loaded") return cx;
+    const p = SOLAR_PREF[d.id];
+    if (!p) return cx;
+    if (p.bearing === 90)  return cx + w * 0.30;  // east
+    if (p.bearing === 270) return cx - w * 0.30;  // west
+    return cx; // south/north — no east/west pull
+  }).strength(d => {
+    if (!showSolar || d.type !== "loaded") return 0;
+    const p = SOLAR_PREF[d.id];
+    if (!p) return 0;
+    return (p.bearing === 90 || p.bearing === 270) ? p.strength * 0.10 : 0;
+  });
+}
+
+function makeSolarForceY(cy, h) {
+  // North/south component of solar preference
+  return d3.forceY(d => {
+    if (d.type !== "loaded") return cy;
+    const p = SOLAR_PREF[d.id];
+    if (!p) return cy;
+    if (p.bearing === 180) return cy + h * 0.28;  // south — toward sunlight
+    if (p.bearing ===   0) return cy - h * 0.28;  // north — toward shade
+    return cy; // east/west — no north/south pull
+  }).strength(d => {
+    if (!showSolar || d.type !== "loaded") return 0;
+    const p = SOLAR_PREF[d.id];
+    if (!p) return 0;
+    return (p.bearing === 0 || p.bearing === 180) ? p.strength * 0.10 : 0;
+  });
+}
+
+function makePrivacyForceX(cx, w) {
+  // Public (left) ←→ Private (right) horizontal pull
+  // Strength is proportional to how extreme the score is — balanced
+  // patterns (76, score≈0.5) barely move; strongly public/private ones
+  // pull hard. This means the negotiation is loudest at the extremes.
+  return d3.forceX(d => {
+    if (d.type !== "loaded") return cx;
+    const s = PRIVACY_SCORE[d.id];
+    if (s === undefined) return cx;
+    return cx + (s - 0.5) * w * 0.58;
+  }).strength(d => {
+    if (!showPrivacy || d.type !== "loaded") return 0;
+    const s = PRIVACY_SCORE[d.id];
+    if (s === undefined) return 0;
+    return Math.abs(s - 0.5) * 2 * 0.09; // 0 at center, ~0.09 at extremes
+  });
 }
 
 // ─────────────────────────────────────────────
@@ -899,6 +960,10 @@ function render() {
 
   container.selectAll("*").remove();
 
+  const gw = document.getElementById("graph-area").clientWidth;
+  const gh = document.getElementById("graph-area").clientHeight;
+  const cx = gw / 2, cy = gh / 2;
+
   simulation = d3.forceSimulation(data.nodes)
     .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(d => {
       const sLoaded = LOADED[d.source.id || d.source];
@@ -906,11 +971,12 @@ function render() {
       return (sLoaded && tLoaded) ? 180 : 110;
     }).strength(0.6))
     .force("charge", d3.forceManyBody().strength(d => d.type === "loaded" ? -600 : -120))
-    .force("center", d3.forceCenter(
-      document.getElementById("graph-area").clientWidth / 2,
-      document.getElementById("graph-area").clientHeight / 2
-    ))
-    .force("collide", d3.forceCollide().radius(d => d.type === "loaded" ? 52 : 28));
+    .force("center", d3.forceCenter(cx, cy).strength(showSolar || showPrivacy ? 0.02 : 0.08))
+    .force("collide", d3.forceCollide().radius(d => d.type === "loaded" ? 52 : 28))
+    // Environmental forces — active only when overlay is on; re-registered in updateOverlays()
+    .force("solar-x",   makeSolarForceX(cx, gw))
+    .force("solar-y",   makeSolarForceY(cy, gh))
+    .force("privacy-x", makePrivacyForceX(cx, gw));
 
   // Links
   linkG = container.append("g").selectAll("line")
@@ -1004,17 +1070,32 @@ function render() {
 // ─────────────────────────────────────────────
 
 function updateOverlays() {
-  // Background gradient tints
+  // ── Visual elements ──
   d3.select("#solar-bg").attr("display",   showSolar   ? null : "none");
   d3.select("#privacy-bg").attr("display", showPrivacy ? null : "none");
-
-  // HTML label overlays
   document.getElementById("compass-wrap").style.display  = showSolar   ? "block" : "none";
   document.getElementById("privacy-wrap").style.display  = showPrivacy ? "flex"  : "none";
-
-  // Per-node SVG annotations
   container.selectAll(".solar-arc")    .attr("display", showSolar   ? null : "none");
   container.selectAll(".privacy-band") .attr("display", showPrivacy ? null : "none");
+
+  // ── Physics ──
+  // Re-register the environmental forces so D3 re-initialises strength
+  // caches with the current showSolar / showPrivacy state, then re-energise
+  // the simulation so patterns negotiate their new collective arrangement.
+  if (simulation) {
+    const gw = document.getElementById("graph-area").clientWidth;
+    const gh = document.getElementById("graph-area").clientHeight;
+    const cx = gw / 2, cy = gh / 2;
+
+    simulation
+      .force("solar-x",   makeSolarForceX(cx, gw))
+      .force("solar-y",   makeSolarForceY(cy, gh))
+      .force("privacy-x", makePrivacyForceX(cx, gw))
+      .force("center",    d3.forceCenter(cx, cy).strength(showSolar || showPrivacy ? 0.02 : 0.08));
+
+    // alpha(0.6) gives the simulation enough energy to fully re-settle
+    simulation.alpha(0.6).restart();
+  }
 }
 
 // ─────────────────────────────────────────────
