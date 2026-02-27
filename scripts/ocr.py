@@ -174,7 +174,7 @@ def main():
         "full_text":      full_text,
     }
 
-    out_path = f"{pattern_number:03d}_text.json"
+    out_path = f"patterns/{pattern_number:03d}_text.json"
     with open(out_path, "w") as f:
         json.dump(output, f, indent=2)
 

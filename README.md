@@ -17,8 +17,9 @@ Scanned book pages are processed through an extraction pipeline that produces st
 ```
 pattern-language-extract/
 ├── visualize.html              — the interactive graph (open in browser)
-├── *_knowledge.json            — one structured data file per pattern
-├── *_text.json                 — intermediate OCR output (pipeline input)
+├── patterns/
+│   ├── *_knowledge.json        — one structured data file per pattern
+│   └── *_text.json             — intermediate OCR output (pipeline input)
 ├── images/                     — extracted photos and diagrams per pattern
 ├── log.txt                     — running conversation log
 ├── scripts/

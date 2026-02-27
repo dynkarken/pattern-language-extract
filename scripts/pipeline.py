@@ -65,7 +65,7 @@ def main():
         "full_text":      full_text,
     }
 
-    text_json_path = f"{pattern_number:03d}_text.json"
+    text_json_path = f"patterns/{pattern_number:03d}_text.json"
     with open(text_json_path, "w") as f:
         json.dump(text_data, f, indent=2)
     print(f"\nOCR complete: {text_json_path}")
@@ -77,7 +77,7 @@ def main():
 
     knowledge = extract_mod.extract_knowledge(text_json_path)
 
-    knowledge_json_path = f"{pattern_number:03d}_knowledge.json"
+    knowledge_json_path = f"patterns/{pattern_number:03d}_knowledge.json"
     with open(knowledge_json_path, "w") as f:
         json.dump(knowledge, f, indent=2)
     print(f"\nExtraction complete: {knowledge_json_path}")

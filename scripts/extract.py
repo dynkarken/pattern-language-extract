@@ -200,7 +200,7 @@ def main():
     knowledge = extract_knowledge(text_json_path)
 
     pattern_number = knowledge["pattern_number"]
-    out_path = f"{pattern_number:03d}_knowledge.json"
+    out_path = f"patterns/{pattern_number:03d}_knowledge.json"
     with open(out_path, "w") as f:
         json.dump(knowledge, f, indent=2)
 
