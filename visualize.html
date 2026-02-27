@@ -4,560 +4,357 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pattern Language — Knowledge Graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg:         #0c0a08;
+    --surface:    #100e0b;
+    --border:     rgba(200,185,155,0.09);
+    --border-mid: rgba(200,185,155,0.16);
+    --text:       #c4baa8;
+    --text-dim:   #66594a;
+    --text-faint: #38312a;
+    --accent:     #a07828;
+    --accent-dim: rgba(160,120,40,0.16);
+    --link-req:   #7a2e1e;
+    --link-enh:   #2e5a3a;
+    --danger:     #883018;
+    --noted:      #2e5228;
+  }
+
   body {
-    font-family: 'Georgia', serif;
-    background: #0f0f14;
-    color: #e8e2d9;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
     display: flex;
     height: 100vh;
     overflow: hidden;
   }
 
   /* ── Graph canvas ── */
-  #graph-area {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-
+  #graph-area { flex: 1; position: relative; overflow: hidden; }
   svg { width: 100%; height: 100%; }
 
-  .link {
-    stroke-opacity: 0.6;
-    stroke-width: 1.5;
-    fill: none;
-  }
-  .link.required      { stroke: #e55; }
-  .link.enhanced_by   { stroke: #4c9; }
-  .link.incompatible  { stroke: #fa0; }
+  /* ── Links ── */
+  .link { stroke-opacity: 0.45; stroke-width: 1; fill: none; }
+  .link.required     { stroke: #7a2e1e; }
+  .link.enhanced_by  { stroke: #2a5030; }
+  .link.incompatible { stroke: #5a4818; stroke-dasharray: 5 4; }
+  .link-arrow { fill-opacity: 0.55; }
 
-  .link-arrow { fill-opacity: 0.7; }
-
-  .node-loaded circle {
-    stroke-width: 2.5;
-    cursor: pointer;
-    transition: r 0.15s, filter 0.15s;
-    filter: drop-shadow(0 0 6px rgba(255,255,255,0.15));
-  }
-  .node-loaded.active circle {
-    filter: drop-shadow(0 0 14px rgba(255,255,255,0.55));
-    stroke-width: 3.5;
-  }
-  .node-loaded circle:hover {
-    filter: drop-shadow(0 0 12px rgba(255,255,255,0.45));
-  }
-
-  .node-external circle {
-    cursor: pointer;
-    opacity: 0.5;
-  }
-  .node-external circle:hover { opacity: 0.85; }
+  /* ── Nodes ── */
+  .node-loaded circle { stroke-width: 1; cursor: pointer; transition: stroke-opacity 0.2s; }
+  .node-loaded.active circle:not(.strain-ring) { stroke-width: 1.5; stroke-opacity: 1; }
+  .node-loaded circle:not(.strain-ring):hover  { stroke-opacity: 0.85; }
+  .node-external circle { cursor: pointer; opacity: 0.3; }
+  .node-external circle:hover { opacity: 0.6; }
 
   .label-loaded {
-    font-size: 11px;
-    font-weight: bold;
-    fill: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    fill: var(--text);
+    fill-opacity: 0.55;
     pointer-events: none;
     text-anchor: middle;
   }
-  .label-loaded .num { font-size: 13px; fill: #ffe; }
-
+  .label-loaded .num { font-size: 10px; fill-opacity: 0.75; }
   .label-external {
-    font-size: 9px;
-    fill: #aaa;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px;
+    fill: var(--text-dim);
     pointer-events: none;
     text-anchor: middle;
   }
 
-  /* ── Controls overlay ── */
+  /* ── Controls ── */
   #controls {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 10;
+    position: absolute; top: 20px; left: 20px;
+    display: flex; flex-direction: column; gap: 6px; z-index: 10;
   }
-
   .ctrl-group {
-    background: rgba(20,20,30,0.85);
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 10px 14px;
-    backdrop-filter: blur(8px);
+    background: rgba(12,10,8,0.78);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 9px 13px;
+    backdrop-filter: blur(14px);
   }
-
   .ctrl-group h4 {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #888;
-    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
   }
-
   .ctrl-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    margin-bottom: 4px;
-    cursor: pointer;
-    user-select: none;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text-dim);
+    margin-bottom: 4px; cursor: pointer; user-select: none;
   }
   .ctrl-row:last-child { margin-bottom: 0; }
-
-  .swatch {
-    width: 12px; height: 12px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
+  .swatch { width: 18px; height: 1px; flex-shrink: 0; opacity: 0.6; }
   .toggle-btn {
-    background: #1a1a2e;
-    border: 1px solid #444;
-    border-radius: 4px;
-    color: #ccc;
-    font-size: 11px;
-    padding: 4px 10px;
-    cursor: pointer;
-    width: 100%;
-    text-align: center;
-    transition: background 0.15s;
+    background: transparent; border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px; padding: 3px 0; cursor: pointer;
+    width: 100%; text-align: left;
+    transition: color 0.2s, border-color 0.2s;
     margin-bottom: 4px;
   }
-  .toggle-btn:last-child { margin-bottom: 0; }
-  .toggle-btn:hover { background: #2a2a3e; }
-  .toggle-btn.active { background: #2c3e60; border-color: #5080c0; color: #8af; }
-  .toggle-btn.active.solar-on  { background: #3a2a0a; border-color: #a07030; color: #ffc060; }
-  .toggle-btn.active.priv-on   { background: #251535; border-color: #6030a0; color: #cc80ff; }
+  .toggle-btn:last-child { margin-bottom: 0; border-bottom: none; }
+  .toggle-btn:hover { color: var(--text); }
+  .toggle-btn.active { color: var(--accent); border-bottom-color: var(--accent-dim); }
 
-  /* ── Side panel ── */
+  /* ── Panel ── */
   #panel {
-    width: 360px;
-    min-width: 320px;
-    background: #12121c;
-    border-left: 1px solid #222;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: width 0.25s;
+    width: 380px; min-width: 340px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden; transition: width 0.3s;
   }
-
   #panel.hidden { width: 0; min-width: 0; border: none; }
-
   #panel-header {
-    padding: 20px 20px 14px;
-    border-bottom: 1px solid #222;
+    padding: 26px 26px 18px;
+    border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
-
   #panel-num {
-    font-size: 11px;
-    color: #666;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 6px;
   }
-
   #panel-name {
-    font-size: 18px;
-    font-weight: bold;
-    color: #eee;
-    margin-bottom: 12px;
-    line-height: 1.3;
+    font-size: 24px; font-weight: 400;
+    color: var(--text); margin-bottom: 10px;
+    line-height: 1.2; letter-spacing: 0.01em;
   }
-
   #panel-confidence {
-    font-size: 12px;
-    color: #888;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; color: var(--text-dim); letter-spacing: 0.12em;
   }
+  #panel-body { flex: 1; overflow-y: auto; padding: 0 0 36px; }
+  #panel-body::-webkit-scrollbar { width: 2px; }
+  #panel-body::-webkit-scrollbar-track { background: transparent; }
+  #panel-body::-webkit-scrollbar-thumb { background: var(--border-mid); }
 
-  #panel-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 0 24px;
-  }
-
-  #panel-body::-webkit-scrollbar { width: 4px; }
-  #panel-body::-webkit-scrollbar-track { background: #0f0f14; }
-  #panel-body::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
-  .section {
-    padding: 16px 20px 0;
-  }
-
+  .section { padding: 20px 26px 0; }
   .section-title {
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #555;
-    border-bottom: 1px solid #1e1e2e;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); opacity: 0.65;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 7px; margin-bottom: 14px;
   }
 
+  /* Verbatim */
   .verbatim-block {
-    font-style: italic;
-    font-size: 12px;
-    color: #bbb;
-    line-height: 1.6;
-    background: #0a0a12;
-    border-left: 3px solid #444;
-    padding: 10px 12px;
-    border-radius: 0 4px 4px 0;
-    margin-bottom: 8px;
+    font-style: italic; font-size: 13px;
+    color: var(--text-dim); line-height: 1.75;
+    border-left: 1px solid var(--border-mid);
+    padding: 6px 14px; margin-bottom: 10px;
   }
-
   .verbatim-label {
-    font-size: 9px;
-    text-transform: uppercase;
-    color: #555;
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-    font-style: normal;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; text-transform: uppercase;
+    color: var(--text-faint); letter-spacing: 0.15em;
+    margin-bottom: 5px; font-style: normal;
   }
 
   /* Force cards */
-  .force-card {
-    background: #0e0e1a;
-    border: 1px solid #222;
-    border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-  }
-
-  .force-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-
+  .force-card { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .force-card:last-child { border-bottom: none; }
+  .force-header { display: flex; align-items: baseline; gap: 9px; margin-bottom: 7px; }
   .force-type-badge {
-    font-size: 9px;
-    padding: 2px 7px;
-    border-radius: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; padding: 1px 5px; border-radius: 1px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    flex-shrink: 0; opacity: 0.6;
+    border: 1px solid currentColor; background: transparent;
   }
-
-  .force-name {
-    font-size: 12px;
-    font-weight: bold;
-    color: #ddd;
-    line-height: 1.3;
-  }
-
-  .poles {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 6px;
-  }
-
-  .pole {
-    font-size: 10px;
-    color: #999;
-    background: #080810;
-    border-radius: 4px;
-    padding: 5px 8px;
-    line-height: 1.4;
-  }
-  .pole-a::before { content: "A "; color: #6af; font-weight: bold; }
-  .pole-b::before { content: "B "; color: #fa6; font-weight: bold; }
+  .force-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .poles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 7px; }
+  .pole { font-size: 11px; color: var(--text-dim); line-height: 1.55; }
+  .pole-a::before { content: "A  "; font-family: 'DM Mono', monospace; font-size: 7px; color: var(--text-faint); }
+  .pole-b::before { content: "B  "; font-family: 'DM Mono', monospace; font-size: 7px; color: var(--text-faint); }
 
   /* Rule rows */
-  .rule-row {
-    background: #0e0e1a;
-    border: 1px solid #222;
-    border-radius: 6px;
-    padding: 9px 12px;
-    margin-bottom: 6px;
-  }
-
-  .rule-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
-
+  .rule-row { padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-header { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; flex-wrap: wrap; }
   .rule-badge {
-    font-size: 9px;
-    padding: 1px 6px;
-    border-radius: 3px;
-    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; padding: 1px 4px; border-radius: 1px;
+    flex-shrink: 0; letter-spacing: 0.06em; opacity: 0.55;
   }
-  .rule-badge.hard { background: #3a0a0a; color: #f88; border: 1px solid #600; }
-  .rule-badge.soft { background: #0a1a2a; color: #88f; border: 1px solid #036; }
-  .rule-badge.inv  { background: #1a0a2a; color: #d8f; border: 1px solid #406; font-size: 8px; }
-  .rule-badge.adp  { background: #0a1a0a; color: #8f8; border: 1px solid #040; font-size: 8px; }
+  .rule-badge.hard { color: #9a4030; border: 1px solid #4a2018; }
+  .rule-badge.soft { color: #4a6080; border: 1px solid #1a2a3a; }
+  .rule-badge.inv  { color: #7a5080; border: 1px solid #3a2042; }
+  .rule-badge.adp  { color: #3a6038; border: 1px solid #182e16; }
+  .rule-metric { font-size: 13px; color: var(--text); }
+  .rule-value  { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); margin-top: 2px; opacity: 0.8; }
+  .rule-source { font-size: 10px; font-style: italic; color: var(--text-faint); margin-top: 4px; line-height: 1.45; }
 
-  .rule-metric { font-size: 12px; font-weight: bold; color: #ccc; }
-  .rule-value  { font-size: 11px; color: #adf; margin-top: 2px; }
-  .rule-source { font-size: 10px; color: #555; font-style: italic; margin-top: 4px; line-height: 1.4; }
-
-  /* Failure mode rows */
-  .failure-row {
-    background: #150a0a;
-    border: 1px solid #2a1010;
-    border-radius: 6px;
-    padding: 9px 12px;
-    margin-bottom: 6px;
-  }
-
-  .failure-desc  { font-size: 11px; color: #c88; line-height: 1.5; margin-bottom: 5px; }
-  .failure-sym   { font-size: 10px; color: #888; font-style: italic; line-height: 1.4; }
-  .failure-sym::before { content: "▸ "; color: #a44; }
+  /* Failure rows */
+  .failure-row { padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .failure-row:last-child { border-bottom: none; }
+  .failure-desc { font-size: 12px; color: var(--text-dim); line-height: 1.65; margin-bottom: 5px; }
+  .failure-sym  { font-size: 10px; font-style: italic; color: var(--text-faint); line-height: 1.45; }
+  .failure-sym::before { content: "▸  "; color: var(--danger); opacity: 0.5; }
 
   /* ── Legend ── */
   #legend {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    background: rgba(20,20,30,0.85);
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 11px;
-    z-index: 10;
-    backdrop-filter: blur(8px);
+    position: absolute; bottom: 20px; left: 20px;
+    background: rgba(12,10,8,0.78);
+    border: 1px solid var(--border); border-radius: 2px;
+    padding: 9px 13px; z-index: 10; backdrop-filter: blur(14px);
   }
-
   #legend h4 {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #666;
-    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
   }
-
   .legend-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-    color: #aaa;
+    display: flex; align-items: center; gap: 9px;
+    margin-bottom: 4px; color: var(--text-dim); font-size: 11px;
   }
-
-  .legend-line {
-    width: 24px; height: 2px;
-    flex-shrink: 0;
-  }
+  .legend-row:last-child { margin-bottom: 0; }
+  .legend-line { width: 20px; height: 1px; flex-shrink: 0; }
 
   #hint {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    font-size: 11px;
-    color: #444;
-    z-index: 10;
+    position: absolute; bottom: 20px; right: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.1em;
+    color: var(--text-faint); z-index: 10;
   }
 
   /* ── Strain rings ── */
   .strain-ring {
-    fill: none;
-    stroke-width: 1.5;
-    pointer-events: none;
-    transform-box: fill-box;
-    transform-origin: center;
+    fill: none; stroke-width: 1; pointer-events: none;
+    transform-box: fill-box; transform-origin: center;
   }
   .strain-none { stroke: none; }
   .strain-low {
-    stroke: #b07020;
-    stroke-opacity: 0.45;
-    stroke-dasharray: 10 5;
-    animation: strain-spin 14s linear infinite;
+    stroke: #806018; stroke-opacity: 0.3; stroke-dasharray: 12 7;
+    animation: strain-spin 20s linear infinite;
   }
   .strain-mid {
-    stroke: #c04810;
-    stroke-opacity: 0.65;
-    stroke-dasharray: 8 4;
-    animation: strain-spin 7s linear infinite, strain-pulse 3s ease-in-out infinite;
+    stroke: #7a3018; stroke-opacity: 0.45; stroke-dasharray: 8 5;
+    animation: strain-spin 10s linear infinite, strain-pulse 4s ease-in-out infinite;
   }
   .strain-high {
-    stroke: #b81818;
-    stroke-opacity: 0.8;
-    stroke-dasharray: 6 3;
-    animation: strain-spin 3.5s linear infinite, strain-pulse 1.8s ease-in-out infinite;
+    stroke: #882018; stroke-opacity: 0.6; stroke-dasharray: 5 4;
+    animation: strain-spin 5s linear infinite, strain-pulse 2.5s ease-in-out infinite;
   }
   @keyframes strain-spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
   }
   @keyframes strain-pulse {
-    0%, 100% { stroke-opacity: 0.8; }
-    50%       { stroke-opacity: 0.1; }
+    0%, 100% { stroke-opacity: 0.6; }
+    50%       { stroke-opacity: 0.06; }
   }
 
   /* ── Tension panel section ── */
-  .tension-section { padding: 14px 20px 0; }
+  .tension-section { padding: 18px 26px 0; }
   .tension-section-title {
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #7a3820;
-    border-bottom: 1px solid #2a1510;
-    padding-bottom: 6px;
-    margin-bottom: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--danger); opacity: 0.65;
+    border-bottom: 1px solid rgba(136,48,24,0.18);
+    padding-bottom: 7px; margin-bottom: 0;
   }
-  .tension-item {
-    padding: 10px 0;
-    border-bottom: 1px solid #1a0e0a;
-  }
+  .tension-item { padding: 11px 0; border-bottom: 1px solid var(--border); }
   .tension-item:last-child { border-bottom: none; }
-  .tension-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 7px;
-    margin-bottom: 4px;
-  }
+  .tension-header { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 4px; }
   .tension-badge {
-    font-size: 8px;
-    padding: 2px 6px;
-    border-radius: 8px;
-    flex-shrink: 0;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; padding: 1px 5px; border-radius: 1px;
+    flex-shrink: 0; margin-top: 3px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid currentColor;
   }
-  .tension-open  { background: #3a0a0a; color: #e06040; border: 1px solid #600; }
-  .tension-noted { background: #0a1a0a; color: #50a030; border: 1px solid #183010; }
-  .tension-target-name {
-    font-size: 11px;
-    font-weight: bold;
-    color: #c07850;
-    line-height: 1.35;
-  }
-  .tension-item.tension-acked .tension-target-name { color: #608050; }
+  .tension-open  { color: #8a3818; }
+  .tension-noted { color: #3a5828; }
+  .tension-target-name { font-size: 12px; color: var(--text-dim); line-height: 1.35; }
+  .tension-item.tension-acked .tension-target-name { color: #486030; }
   .tension-note {
-    font-size: 10px;
-    color: #666;
-    font-style: italic;
-    line-height: 1.5;
-    margin-bottom: 8px;
+    font-size: 11px; font-style: italic;
+    color: var(--text-faint); line-height: 1.6; margin-bottom: 9px;
   }
   .tension-annotation {
-    background: #080810;
-    border: 1px solid #2a1a10;
-    border-radius: 3px;
-    color: #aaa;
-    font-family: Georgia, serif;
-    font-size: 10px;
-    line-height: 1.5;
-    padding: 6px 8px;
-    resize: vertical;
-    min-height: 44px;
-    width: 100%;
-    box-sizing: border-box;
+    background: transparent;
+    border: none; border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; line-height: 1.6;
+    padding: 5px 0; resize: none; min-height: 48px;
+    width: 100%; box-sizing: border-box;
   }
-  .tension-annotation:focus { outline: none; border-color: #5a2a10; }
-  .tension-annotation::placeholder { color: #383020; font-style: italic; }
-  .tension-annotation-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .tension-annotation:focus { outline: none; border-bottom-color: var(--accent); }
+  .tension-annotation::placeholder { color: var(--text-faint); font-style: italic; }
+  .tension-annotation-wrap { display: flex; flex-direction: column; gap: 6px; }
   .tension-save-btn {
-    align-self: flex-end;
-    background: #180808;
-    border: 1px solid #481808;
-    border-radius: 3px;
-    color: #c06030;
-    cursor: pointer;
-    font-family: Georgia, serif;
-    font-size: 10px;
-    padding: 3px 10px;
-    transition: background 0.1s;
+    align-self: flex-end; background: transparent; border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.12em;
+    padding: 3px 0; transition: color 0.15s, border-color 0.15s;
   }
-  .tension-save-btn:hover { background: #281008; color: #e08040; }
+  .tension-save-btn:hover { color: var(--accent); border-bottom-color: var(--accent-dim); }
   .tension-ann-display {
-    font-size: 10px;
-    color: #50803a;
-    font-style: italic;
-    line-height: 1.45;
-    margin-top: 2px;
-    padding: 4px 0;
+    font-size: 12px; font-style: italic; color: #486030;
+    line-height: 1.55; margin-top: 3px;
   }
   .tension-edit-btn {
-    background: none;
-    border: none;
-    color: #385828;
-    cursor: pointer;
-    font-family: Georgia, serif;
-    font-size: 9px;
-    padding: 2px 0;
-    text-decoration: underline;
-    text-align: left;
+    background: none; border: none; color: var(--text-faint);
+    cursor: pointer; font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.1em;
+    padding: 3px 0; opacity: 0.7;
   }
-  .tension-edit-btn:hover { color: #508038; }
+  .tension-edit-btn:hover { color: var(--text-dim); opacity: 1; }
 
   /* ── Compass overlay ── */
   #compass-wrap {
-    display: none;
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 10;
-    pointer-events: none;
-    background: rgba(20,20,30,0.82);
-    border: 1px solid #3a3020;
-    border-radius: 10px;
-    padding: 10px 14px;
-    backdrop-filter: blur(8px);
-    text-align: center;
+    display: none; position: absolute; top: 20px; right: 20px;
+    z-index: 10; pointer-events: none;
+    background: rgba(12,10,8,0.78);
+    border: 1px solid var(--border); border-radius: 2px;
+    padding: 10px 14px; backdrop-filter: blur(14px); text-align: center;
   }
-
   #compass-wrap h4 {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #6a5a30;
-    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
   }
-
   .compass-legend {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3px 10px;
-    font-size: 10px;
-    margin-top: 8px;
-    text-align: left;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px;
+    font-family: 'DM Mono', monospace; font-size: 7px;
+    margin-top: 8px; text-align: left; color: var(--text-dim);
   }
 
   /* ── Privacy overlay bar ── */
   #privacy-wrap {
-    display: none;
-    position: absolute;
-    bottom: 52px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    pointer-events: none;
-    align-items: center;
-    gap: 10px;
-    background: rgba(20,20,30,0.82);
-    border: 1px solid #2a1a3a;
-    border-radius: 8px;
-    padding: 7px 14px;
-    backdrop-filter: blur(8px);
+    display: none; position: absolute; bottom: 52px; left: 50%;
+    transform: translateX(-50%); z-index: 10; pointer-events: none;
+    align-items: center; gap: 12px;
+    background: rgba(12,10,8,0.78);
+    border: 1px solid var(--border); border-radius: 2px;
+    padding: 7px 16px; backdrop-filter: blur(14px);
   }
-
   .priv-label {
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.12em; white-space: nowrap;
+    color: var(--text-dim);
   }
-
   .priv-gradient-bar {
-    width: 160px;
-    height: 5px;
-    border-radius: 3px;
-    background: linear-gradient(to right, #66bb6a, #ab47bc);
-    opacity: 0.75;
-    flex-shrink: 0;
+    width: 100px; height: 1px;
+    background: linear-gradient(to right, #2a5038, #5a3848);
+    opacity: 0.55; flex-shrink: 0;
   }
 </style>
 </head>
@@ -570,11 +367,11 @@
     <div class="ctrl-group">
       <h4>Show edges</h4>
       <label class="ctrl-row">
-        <span class="swatch" style="background:#e55"></span>
+        <span class="swatch" style="background:#7a2e1e"></span>
         <input type="checkbox" checked data-edge="required"> required
       </label>
       <label class="ctrl-row">
-        <span class="swatch" style="background:#4c9"></span>
+        <span class="swatch" style="background:#2a5030"></span>
         <input type="checkbox" checked data-edge="enhanced_by"> enhanced_by
       </label>
     </div>
@@ -591,9 +388,9 @@
 
   <div id="legend">
     <h4>Relationships</h4>
-    <div class="legend-row"><div class="legend-line" style="background:#e55"></div> required</div>
-    <div class="legend-row"><div class="legend-line" style="background:#4c9"></div> enhanced_by</div>
-    <div class="legend-row"><div class="legend-line" style="background:#fa0; height:1px; border-top:1px dashed #fa0"></div> incompatible_with</div>
+    <div class="legend-row"><div class="legend-line" style="background:#7a2e1e"></div> required</div>
+    <div class="legend-row"><div class="legend-line" style="background:#2a5030"></div> enhanced_by</div>
+    <div class="legend-row"><div class="legend-line" style="background:transparent; border-top:1px dashed #5a4818"></div> incompatible_with</div>
   </div>
 
   <!-- Compass rose (solar overlay) -->
@@ -601,38 +398,38 @@
     <h4>Solar / Cardinal</h4>
     <svg viewBox="-46 -46 92 92" width="90" height="90">
       <!-- N spoke -->
-      <line x1="0" y1="-8" x2="0" y2="-32" stroke="#90caf9" stroke-width="1.5"/>
-      <polygon points="0,-40 -4.5,-30 4.5,-30" fill="#90caf9"/>
-      <text x="0" y="-43" text-anchor="middle" fill="#90caf9" font-size="9" font-family="Georgia,serif">N</text>
+      <line x1="0" y1="-8" x2="0" y2="-32" stroke="#4a7090" stroke-width="1.5"/>
+      <polygon points="0,-40 -4.5,-30 4.5,-30" fill="#4a7090"/>
+      <text x="0" y="-43" text-anchor="middle" fill="#4a7090" font-size="9" font-family="Georgia,serif">N</text>
       <!-- S spoke (thicker — sunlight direction) -->
-      <line x1="0" y1="8" x2="0" y2="32" stroke="#ffb74d" stroke-width="2"/>
-      <polygon points="0,40 -5.5,30 5.5,30" fill="#ffb74d"/>
-      <text x="0" y="46" text-anchor="middle" fill="#ffb74d" font-size="9" font-family="Georgia,serif">S</text>
+      <line x1="0" y1="8" x2="0" y2="32" stroke="#907030" stroke-width="2"/>
+      <polygon points="0,40 -5.5,30 5.5,30" fill="#907030"/>
+      <text x="0" y="46" text-anchor="middle" fill="#907030" font-size="9" font-family="Georgia,serif">S</text>
       <!-- E spoke -->
-      <line x1="8" y1="0" x2="30" y2="0" stroke="#ffcc80" stroke-width="1.2"/>
-      <polygon points="38,0 28,-3.5 28,3.5" fill="#ffcc80"/>
-      <text x="45" y="3.5" text-anchor="middle" fill="#ffcc80" font-size="9" font-family="Georgia,serif">E</text>
+      <line x1="8" y1="0" x2="30" y2="0" stroke="#7a6530" stroke-width="1.2"/>
+      <polygon points="38,0 28,-3.5 28,3.5" fill="#7a6530"/>
+      <text x="45" y="3.5" text-anchor="middle" fill="#7a6530" font-size="9" font-family="Georgia,serif">E</text>
       <!-- W spoke -->
-      <line x1="-8" y1="0" x2="-30" y2="0" stroke="#ffab91" stroke-width="1.2"/>
-      <polygon points="-38,0 -28,-3.5 -28,3.5" fill="#ffab91"/>
-      <text x="-45" y="3.5" text-anchor="middle" fill="#ffab91" font-size="9" font-family="Georgia,serif">W</text>
+      <line x1="-8" y1="0" x2="-30" y2="0" stroke="#7a5040" stroke-width="1.2"/>
+      <polygon points="-38,0 -28,-3.5 -28,3.5" fill="#7a5040"/>
+      <text x="-45" y="3.5" text-anchor="middle" fill="#7a5040" font-size="9" font-family="Georgia,serif">W</text>
       <!-- Center -->
-      <circle cx="0" cy="0" r="5" fill="#1a1a2e" stroke="#555" stroke-width="1"/>
-      <circle cx="0" cy="0" r="2" fill="#888"/>
+      <circle cx="0" cy="0" r="5" fill="#100e0b" stroke="rgba(200,185,155,0.2)" stroke-width="1"/>
+      <circle cx="0" cy="0" r="2" fill="#66594a"/>
     </svg>
     <div class="compass-legend">
-      <span style="color:#ffb74d">S — sunlight</span>
-      <span style="color:#90caf9">N — shade</span>
-      <span style="color:#ffcc80">E — morning</span>
-      <span style="color:#ffab91">W — afternoon</span>
+      <span style="color:#907030">S — sunlight</span>
+      <span style="color:#4a7090">N — shade</span>
+      <span style="color:#7a6530">E — morning</span>
+      <span style="color:#7a5040">W — afternoon</span>
     </div>
   </div>
 
   <!-- Privacy axis bar (privacy overlay) -->
   <div id="privacy-wrap">
-    <span class="priv-label" style="color:#66bb6a">← public</span>
+    <span class="priv-label" style="color:#3a6850">← public</span>
     <div class="priv-gradient-bar"></div>
-    <span class="priv-label" style="color:#ab47bc">private →</span>
+    <span class="priv-label" style="color:#6a3870">private →</span>
   </div>
 
   <div id="hint">scroll to zoom · drag to pan · click node for detail</div>
@@ -677,7 +474,7 @@ const LOADED = {
       { description: "When pavilions are arranged without enclosing the courtyard on at least three sides, the outdoor space loses enclosure and becomes an open lawn.", symptom: "Outdoor space goes unused; children cannot be passively supervised from kitchen" },
       { description: "When the kitchen has no sightline to play areas, parents must physically leave the kitchen to check on children, interrupting cooking.", symptom: "Children confined indoors; kitchen loses its role as social hub" },
     ],
-    color: "#3a8fd6"
+    color: "#4a7090"
   },
   128: {
     name: "Indoor Sunlight",
@@ -701,7 +498,7 @@ const LOADED = {
       { description: "When important rooms are placed on the north side, they receive no direct sunlight and remain permanently dark and gloomy.", symptom: "interior feels dark, cold, and cheerless; occupants use artificial light during the day" },
       { description: "When the building is oriented north-south rather than east-west, fewer rooms can access the south edge and the building performs thermally worse.", symptom: "excessive summer overheating and winter heat loss" },
     ],
-    color: "#d4a017"
+    color: "#907030"
   },
   129: {
     name: "Common Areas at the Heart",
@@ -724,7 +521,7 @@ const LOADED = {
       { description: "When the common area is placed as a dead-end room, people must make a deliberate detour to reach it and routinely bypass it, so group cohesion never forms.", symptom: "Common room sits empty; members never encounter one another casually" },
       { description: "When the common area is placed off-center, those farther away feel excluded and stop using it.", symptom: "Common area is colonised by the nearest subgroup; distant members form separate gathering spots" },
     ],
-    color: "#e07a20"
+    color: "#885030"
   },
   131: {
     name: "The Flow Through Rooms",
@@ -747,7 +544,7 @@ const LOADED = {
       { description: "When corridors are used instead of common rooms for circulation, the building feels dead and movement becomes purely functional transit.", symptom: "Corridors go unused except for transit; common rooms lose vitality" },
       { description: "When common rooms are arranged in a dead-end chain without a loop, occupants must retrace their path to exit.", symptom: "Rooms at the end of the chain feel remote and cut off" },
     ],
-    color: "#9b59b6"
+    color: "#6a4878"
   },
   136: {
     name: "Couple's Realm",
@@ -771,7 +568,7 @@ const LOADED = {
       { description: "When bedroom walls are acoustically thin, the couple is constantly aware of children nearby and cannot achieve intimacy.", symptom: "Private life is permeated by parental awareness; the couple cannot speak privately" },
       { description: "When the couple's realm is reduced to only a bedroom, it fails to function as a complete private world.", symptom: "Conversation, projects, and relaxation have no protected place; couple reverts to shared family spaces" },
     ],
-    color: "#c0392b"
+    color: "#7a3828"
   },
   143: {
     name: "Bed Cluster",
@@ -794,7 +591,7 @@ const LOADED = {
       { description: "When each child has a fully separate private room, young children feel isolated and lonely during sleeping hours.", symptom: "Children feel abandoned or anxious at night" },
       { description: "When sleeping alcoves are not connected to a shared playspace, children lose both the private retreat and the communal connection.", symptom: "The arrangement reverts to either shared-room or isolated-room failure modes" },
     ],
-    color: "#1abc9c"
+    color: "#38685a"
   }
 };
 
@@ -921,14 +718,14 @@ function computeTensions(patternId) {
 // FORCE TYPE COLOURS
 // ─────────────────────────────────────────────
 const FORCE_COLORS = {
-  social:      { bg:"#1a2440", text:"#8abcff", border:"#2a4060" },
-  spatial:     { bg:"#251a40", text:"#c8a0ff", border:"#402a60" },
-  dimensional: { bg:"#1a3025", text:"#80d0a0", border:"#2a5030" },
-  light:       { bg:"#3a3010", text:"#ffd060", border:"#605020" },
-  movement:    { bg:"#3a2010", text:"#ffa060", border:"#604020" },
-  privacy:     { bg:"#301025", text:"#ff88cc", border:"#501040" },
-  territorial: { bg:"#301010", text:"#ff8080", border:"#501010" },
-  temporal:    { bg:"#1a1a1a", text:"#aaaaaa", border:"#333333" },
+  social:      { bg:"#0e1218", text:"#6080a0", border:"#1a2530" },
+  spatial:     { bg:"#120e18", text:"#8868a8", border:"#22183a" },
+  dimensional: { bg:"#0e1810", text:"#507858", border:"#182a1a" },
+  light:       { bg:"#181408", text:"#988040", border:"#302810" },
+  movement:    { bg:"#180e08", text:"#986040", border:"#302010" },
+  privacy:     { bg:"#160810", text:"#986088", border:"#280a20" },
+  territorial: { bg:"#160808", text:"#985858", border:"#280808" },
+  temporal:    { bg:"#0e0e0e", text:"#686868", border:"#1e1e1e" },
 };
 
 // ─────────────────────────────────────────────
@@ -969,18 +766,18 @@ function solarArcPath(bearing) {
 }
 
 function solarArcColor(bearing) {
-  if (bearing === 180) return "#ffb74d"; // south — warm sun
-  if (bearing ===   0) return "#90caf9"; // north — cool shade
-  if (bearing ===  90) return "#ffcc80"; // east — morning
-  if (bearing === 270) return "#ffab91"; // west — afternoon
-  return "#ccc";
+  if (bearing === 180) return "#907030"; // south — warm amber
+  if (bearing ===   0) return "#4a7090"; // north — slate blue
+  if (bearing ===  90) return "#7a6530"; // east — morning
+  if (bearing === 270) return "#7a5040"; // west — afternoon
+  return "#66594a";
 }
 
-// Interpolate green (#66bb6a) → purple (#ab47bc) for public→private
+// Interpolate muted sage (#3a6850) → muted mauve (#6a3870) for public→private
 function privacyColor(score) {
-  const r = Math.round(102 + (171 - 102) * score);
-  const g = Math.round(187 + ( 71 - 187) * score);
-  const b = Math.round(106 + (188 - 106) * score);
+  const r = Math.round( 58 + (106 -  58) * score);
+  const g = Math.round(104 + ( 56 - 104) * score);
+  const b = Math.round( 80 + (112 -  80) * score);
   return `rgb(${r},${g},${b})`;
 }
 
@@ -1094,18 +891,18 @@ const solarGrad = defs.append("linearGradient")
   .attr("id", "grad-solar")
   .attr("x1", "0%").attr("y1", "100%")
   .attr("x2", "0%").attr("y2", "0%");
-solarGrad.append("stop").attr("offset",  "0%").attr("stop-color", "#ffb74d").attr("stop-opacity", 0.07);
-solarGrad.append("stop").attr("offset", "48%").attr("stop-color", "#0f0f14").attr("stop-opacity", 0);
-solarGrad.append("stop").attr("offset","100%").attr("stop-color", "#4fc3f7").attr("stop-opacity", 0.05);
+solarGrad.append("stop").attr("offset",  "0%").attr("stop-color", "#907030").attr("stop-opacity", 0.06);
+solarGrad.append("stop").attr("offset", "48%").attr("stop-color", "#0c0a08").attr("stop-opacity", 0);
+solarGrad.append("stop").attr("offset","100%").attr("stop-color", "#4a7090").attr("stop-opacity", 0.04);
 
 // Privacy: green on left (public), purple on right (private)
 const privGrad = defs.append("linearGradient")
   .attr("id", "grad-privacy")
   .attr("x1", "0%").attr("y1", "0%")
   .attr("x2","100%").attr("y2", "0%");
-privGrad.append("stop").attr("offset",  "0%").attr("stop-color", "#66bb6a").attr("stop-opacity", 0.07);
-privGrad.append("stop").attr("offset", "48%").attr("stop-color", "#0f0f14").attr("stop-opacity", 0);
-privGrad.append("stop").attr("offset","100%").attr("stop-color", "#ab47bc").attr("stop-opacity", 0.07);
+privGrad.append("stop").attr("offset",  "0%").attr("stop-color", "#3a6850").attr("stop-opacity", 0.06);
+privGrad.append("stop").attr("offset", "48%").attr("stop-color", "#0c0a08").attr("stop-opacity", 0);
+privGrad.append("stop").attr("offset","100%").attr("stop-color", "#6a3870").attr("stop-opacity", 0.06);
 
 // ── Fixed background overlay rects (rendered before zoom container) ──
 
@@ -1145,10 +942,10 @@ function addMarker(id, color) {
     .attr("fill", color)
     .attr("class", "link-arrow");
 }
-addMarker("arrow-required",        "#e55");
-addMarker("arrow-enhanced_by",     "#4c9");
-addMarker("arrow-ext-required",    "#a33");
-addMarker("arrow-ext-enhanced_by", "#2a6");
+addMarker("arrow-required",        "#7a2e1e");
+addMarker("arrow-enhanced_by",     "#2a5030");
+addMarker("arrow-ext-required",    "#4a1e14");
+addMarker("arrow-ext-enhanced_by", "#1a3820");
 
 const markerFor = (rel, isInternal) => `url(#arrow-${isInternal ? "" : "ext-"}${rel})`;
 
@@ -1174,9 +971,9 @@ function render() {
       const tLoaded = LOADED[d.target.id || d.target];
       return (sLoaded && tLoaded) ? 180 : 110;
     }).strength(0.6))
-    .force("charge", d3.forceManyBody().strength(d => d.type === "loaded" ? -600 : -120))
+    .force("charge", d3.forceManyBody().strength(d => d.type === "loaded" ? -500 : -100))
     .force("center", d3.forceCenter(cx, cy).strength(showSolar || showPrivacy ? 0.02 : 0.08))
-    .force("collide", d3.forceCollide().radius(d => d.type === "loaded" ? 52 : 28))
+    .force("collide", d3.forceCollide().radius(d => d.type === "loaded" ? 42 : 20))
     // Environmental forces — active only when overlay is on; re-registered in updateOverlays()
     .force("solar-x",   makeSolarForceX(cx, gw))
     .force("solar-y",   makeSolarForceY(cy, gh))
@@ -1216,7 +1013,7 @@ function render() {
     .attr("class", "solar-arc")
     .attr("d", d => SOLAR_PREF[d.id] ? solarArcPath(SOLAR_PREF[d.id].bearing) : "")
     .attr("fill", d => SOLAR_PREF[d.id] ? solarArcColor(SOLAR_PREF[d.id].bearing) : "none")
-    .attr("fill-opacity", 0.38)
+    .attr("fill-opacity", 0.18)
     .attr("pointer-events", "none")
     .attr("display", "none"); // hidden until overlay activated
 
@@ -1225,19 +1022,19 @@ function render() {
   //    Updated by updateStrainRings() after render and after each annotation change.
   nodeG.filter(d => d.type === "loaded").append("circle")
     .attr("class", "strain-ring strain-none")
-    .attr("r", 46);
+    .attr("r", 38);
 
   // 3. Circle
   nodeG.filter(d => d.type === "loaded").append("circle")
-    .attr("r", 36)
-    .attr("fill", d => d.color + "33")
+    .attr("r", 28)
+    .attr("fill", d => d.color + "1a")
     .attr("stroke", d => d.color);
 
   // 3. Privacy band (below circle)
   nodeG.filter(d => d.type === "loaded").append("rect")
     .attr("class", "privacy-band")
-    .attr("x", -14).attr("y", 40)
-    .attr("width", 28).attr("height", 4)
+    .attr("x", -10).attr("y", 33)
+    .attr("width", 20).attr("height", 2)
     .attr("rx", 2)
     .attr("fill", d => privacyColor(PRIVACY_SCORE[d.id] !== undefined ? PRIVACY_SCORE[d.id] : 0.5))
     .attr("pointer-events", "none")
@@ -1253,9 +1050,9 @@ function render() {
 
   // ── External nodes ──
   nodeG.filter(d => d.type === "external").append("circle")
-    .attr("r", 16)
-    .attr("fill", "#1e1e2e")
-    .attr("stroke", "#444");
+    .attr("r", 12)
+    .attr("fill", "#100e0b")
+    .attr("stroke", "rgba(200,185,155,0.18)");
 
   nodeG.filter(d => d.type === "external").append("text")
     .attr("class", "label-external")
@@ -1487,7 +1284,7 @@ function esc(s) {
 }
 
 function confidenceColor(c) {
-  return { "*":"#f88", "**":"#fa0", "***":"#4d4" }[c] || "#888";
+  return { "*":"#8a4030", "**":"#907030", "***":"#3a6030" }[c] || "#4a4038";
 }
 
 // ─────────────────────────────────────────────
